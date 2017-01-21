@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_jHiq8N5_Eea5mNQ4-KgbTw" name="NewModel">
+  <packagedElement xmi:type="uml:Interface" xmi:id="_z_-AoN5_Eea5mNQ4-KgbTw" name="Maid">
+    <ownedOperation xmi:id="_8pRvQN7AEea5mNQ4-KgbTw" name="active"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_u_IN4N6IEea5mNQ4-KgbTw" name="Hotel">
+    <ownedOperation xmi:id="_wzknAN6IEea5mNQ4-KgbTw" name="cleaningTime"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_CFR_YN6JEea5mNQ4-KgbTw" memberEnd="_CFR_Yd6JEea5mNQ4-KgbTw _CFSmct6JEea5mNQ4-KgbTw" navigableOwnedEnd="_CFSmct6JEea5mNQ4-KgbTw">
+    <ownedEnd xmi:id="_CFR_Yd6JEea5mNQ4-KgbTw" name="hotels" type="_u_IN4N6IEea5mNQ4-KgbTw" association="_CFR_YN6JEea5mNQ4-KgbTw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_CFSmcN6JEea5mNQ4-KgbTw"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_CFSmcd6JEea5mNQ4-KgbTw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_CFSmct6JEea5mNQ4-KgbTw" name="maids" type="_z_-AoN5_Eea5mNQ4-KgbTw" aggregation="composite" association="_CFR_YN6JEea5mNQ4-KgbTw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_CFTNgN6JEea5mNQ4-KgbTw"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_CFTNgd6JEea5mNQ4-KgbTw" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_dhYvMN6JEea5mNQ4-KgbTw" name="MaidDayService">
+    <ownedOperation xmi:id="_n2KKoN6JEea5mNQ4-KgbTw" name="date"/>
+    <ownedOperation xmi:id="_rRlIoN6JEea5mNQ4-KgbTw" name="status"/>
+    <ownedOperation xmi:id="_whCQEN6JEea5mNQ4-KgbTw" name="note"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_nW6C0N6JEea5mNQ4-KgbTw" memberEnd="_nW7Q8N6JEea5mNQ4-KgbTw _nW74Ad6JEea5mNQ4-KgbTw" navigableOwnedEnd="_nW74Ad6JEea5mNQ4-KgbTw">
+    <ownedEnd xmi:id="_nW7Q8N6JEea5mNQ4-KgbTw" name="maids" type="_z_-AoN5_Eea5mNQ4-KgbTw" association="_nW6C0N6JEea5mNQ4-KgbTw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_nW7Q8d6JEea5mNQ4-KgbTw"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_nW74AN6JEea5mNQ4-KgbTw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_nW74Ad6JEea5mNQ4-KgbTw" name="maidDayServices" type="_dhYvMN6JEea5mNQ4-KgbTw" aggregation="composite" association="_nW6C0N6JEea5mNQ4-KgbTw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_nW8fEN6JEea5mNQ4-KgbTw"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_nW8fEd6JEea5mNQ4-KgbTw" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_z6LWIN6JEea5mNQ4-KgbTw" name="Room">
+    <ownedOperation xmi:id="_1QwukN6JEea5mNQ4-KgbTw" name="status"/>
+  </packagedElement>
+</uml:Model>
