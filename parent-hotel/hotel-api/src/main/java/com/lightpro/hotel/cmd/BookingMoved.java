@@ -1,6 +1,6 @@
 package com.lightpro.hotel.cmd;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BookingMoved {
 
-	private final Date newStart;
-	private final Date newEnd;
+	private final LocalDateTime newStart;
+	private final LocalDateTime newEnd;
 	private final UUID newRoomId;
 	
 	public BookingMoved(){
@@ -17,8 +17,8 @@ public class BookingMoved {
 	}
 	
 	@JsonCreator
-	public BookingMoved(@JsonProperty("newStart") final Date newStart,
-						@JsonProperty("newEnd") final Date newEnd,
+	public BookingMoved(@JsonProperty("newStart") final LocalDateTime newStart,
+						@JsonProperty("newEnd") final LocalDateTime newEnd,
 						@JsonProperty("newRoomId") final UUID newRoomId){
 		
 		this.newStart = newStart;
@@ -26,11 +26,11 @@ public class BookingMoved {
 		this.newRoomId = newRoomId;
 	}
 	
-	public Date newStart(){
+	public LocalDateTime newStart(){
 		return this.newStart;
 	}
 	
-	public Date newEnd(){
+	public LocalDateTime newEnd(){
 		return this.newEnd;
 	}
 	

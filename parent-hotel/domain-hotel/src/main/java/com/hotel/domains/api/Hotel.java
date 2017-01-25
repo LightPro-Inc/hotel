@@ -11,5 +11,7 @@ public interface Hotel {
 	Rooms allRooms() throws IOException;	
 	List<RoomFloor> allRoomFloors() throws IOException;
 	Bookings bookings() throws IOException;
+	DayOccupations dayOccupations() throws IOException;
 	Maids maids() throws IOException;
+	MaidDayJobs maidDayJobs() throws IOException;
 }

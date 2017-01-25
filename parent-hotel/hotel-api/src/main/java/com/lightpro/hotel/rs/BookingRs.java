@@ -1,6 +1,8 @@
 package com.lightpro.hotel.rs;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +22,8 @@ import javax.ws.rs.core.Response.Status;
 
 import com.hotel.domains.api.Booking;
 import com.hotel.domains.api.Bookings;
+import com.hotel.domains.api.DayOccupation;
+import com.hotel.domains.api.DayOccupationStatus;
 import com.hotel.domains.api.Guest;
 import com.hotel.domains.api.Guests;
 import com.hotel.domains.api.RoomCategories;
@@ -30,8 +34,10 @@ import com.lightpro.hotel.cmd.BookingPeriod;
 import com.lightpro.hotel.cmd.BookingResized;
 import com.lightpro.hotel.cmd.GuestEdit;
 import com.lightpro.hotel.vm.BookingVm;
+import com.lightpro.hotel.vm.DayOccupationVm;
 import com.lightpro.hotel.vm.GuestVm;
 import com.lightpro.hotel.vm.LocationStat;
+import com.lightpro.hotel.vm.RateOccupation;
 import com.lightpro.hotel.vm.ResumeLocationStat;
 import com.securities.api.Person;
 import com.infrastructure.core.PaginationSet;
@@ -135,6 +141,114 @@ public class BookingRs extends HotelBaseRs {
 						return Response.ok(new GuestVm(booking.guest())).build();
 					}
 				});	
+	}
+	
+	@GET
+	@Path("/day-occupation")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getDayOccupations() throws IOException {
+				
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						List<DayOccupation> items = hotel().dayOccupations().of(LocalDate.now());
+						
+						List<DayOccupationVm> itemsVm = items.stream()
+															 .map(m -> new DayOccupationVm(m))
+															 .collect(Collectors.toList());
+						
+						return Response.ok(itemsVm).build();
+					}
+				});
+	}
+	
+	@GET
+	@Path("/day-occupation/client-en-recouche")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getDayOccupationsClientEnRechouche() throws IOException {
+				
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						List<DayOccupation> items = hotel().dayOccupations().of(LocalDate.now());
+						
+						List<DayOccupationVm> itemsVm = items.stream()
+															 .filter(m -> {
+																try {
+																	return m.status() == DayOccupationStatus.CUSTOMER_RECOUCHE;
+																} catch (IOException e) {
+																	e.printStackTrace();
+																}
+																return false;
+															})
+															 .map(m -> new DayOccupationVm(m))
+															 .collect(Collectors.toList());
+						
+						return Response.ok(itemsVm).build();
+					}
+				});
+	}
+	
+	@GET
+	@Path("/day-occupation/client-attendu")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getDayOccupationsClientAttendus() throws IOException {
+				
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						List<DayOccupation> items = hotel().dayOccupations().of(LocalDate.now());
+						
+						List<DayOccupationVm> itemsVm = items.stream()
+															 .filter(m -> {
+																try {
+																	return m.status() == DayOccupationStatus.CUSTOMER_WAITED;
+																} catch (IOException e) {
+																	e.printStackTrace();
+																}
+																return false;
+															})
+															 .map(m -> new DayOccupationVm(m))
+															 .collect(Collectors.toList());
+						
+						return Response.ok(itemsVm).build();
+					}
+				});
+	}
+	
+	@GET
+	@Path("/day-occupation/client-arrive")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getDayOccupationsClientArrives() throws IOException {
+				
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						List<DayOccupation> items = hotel().dayOccupations().of(LocalDate.now());
+						
+						List<DayOccupationVm> itemsVm = items.stream()
+															 .filter(m -> {
+																try {
+																	return m.status() == DayOccupationStatus.CUSTOMER_ARRIVED;
+																} catch (IOException e) {
+																	e.printStackTrace();
+																}
+																return false;
+															})
+															 .map(m -> new DayOccupationVm(m))
+															 .collect(Collectors.toList());
+						
+						return Response.ok(itemsVm).build();
+					}
+				});
 	}
 	
 	@POST
@@ -293,6 +407,57 @@ public class BookingRs extends HotelBaseRs {
 						hotel().bookings().findSingle(id).checkOut();
 						
 						return Response.noContent().build();
+					}
+				});		
+	}
+	
+	@POST
+	@Path("/rate-occupation/month")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getMonthRateOccupation(final LocalDateTime date) {
+		
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						double rate = hotel().bookings().monthOccupationRate(date.toLocalDate());
+						
+						return Response.ok(new RateOccupation(rate, false, date.toLocalDate())).build();
+					}
+				});		
+	}
+	
+	@POST
+	@Path("/rate-occupation/week-work-day")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getRateWeekWorkDayOccupation(final LocalDateTime date) {
+		
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						double rate = hotel().bookings().weekWorkDayOccupationRate(date.toLocalDate());
+						
+						return Response.ok(new RateOccupation(rate, true, date.toLocalDate())).build();
+					}
+				});		
+	}
+	
+	@POST
+	@Path("/rate-occupation/weekend")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getRateWeekendOccupation(final LocalDateTime date) {
+		
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						double rate = hotel().bookings().weekendOccupationRate(date.toLocalDate());
+						
+						return Response.ok(new RateOccupation(rate, true, date.toLocalDate())).build();
 					}
 				});		
 	}

@@ -1,8 +1,13 @@
 package com.hotel.domains.impl;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +42,7 @@ public class BookingsImpl implements Bookings {
 	}
 	
 	@Override
-	public Booking book(UUID guestid, UUID roomid, Date start, Date end, double nightPriceApplied) throws IOException {
+	public Booking book(UUID guestid, UUID roomid, LocalDateTime start, LocalDateTime end, double nightPriceApplied) throws IOException {
 		
 		if (start == null) {
             throw new IllegalArgumentException("Invalid start date : it can't be empty!");
@@ -47,14 +52,12 @@ public class BookingsImpl implements Bookings {
             throw new IllegalArgumentException("Invalid end date : it can't be empty !");
         }
 		
-		final long MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24; 
-    	long delta = end.getTime() - start.getTime();
-    	long numberOfDays = delta / (MILLISECONDS_PER_DAY);
+    	long numberOfDays = ChronoUnit.DAYS.between(start, end);
     	
     	Map<String, Object> params = new HashMap<String, Object>();
-		params.put(dm.startDateKey(), new java.sql.Timestamp(start.getTime()));	
-		params.put(dm.endDateKey(), new java.sql.Timestamp(end.getTime()));
-		params.put(dm.statusKey(), BookingStatus.NEW.toString());
+		params.put(dm.startDateKey(), Timestamp.valueOf(start));	
+		params.put(dm.endDateKey(), Timestamp.valueOf(end));
+		params.put(dm.statusKey(), BookingStatus.NEW.name());
 		params.put(dm.nightPriceAppliedKey(), nightPriceApplied);
 		params.put(dm.vatRateAppliedKey(), 0.18);
 		params.put(dm.paidAmountKey(), 0);
@@ -70,14 +73,14 @@ public class BookingsImpl implements Bookings {
 	}
 
 	@Override
-	public List<Booking> between(Date start, Date end) throws IOException {
+	public List<Booking> between(LocalDate start, LocalDate end) throws IOException {
 		List<Booking> values = new ArrayList<Booking>();
 		
 		String statement = String.format("SELECT %s FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s", dm.keyName(), dm.domainName(), dm.startDateKey(), dm.endDateKey(), dm.startDateKey());
 		
 		List<Object> params = new ArrayList<Object>();
-		params.add(new java.sql.Timestamp(start.getTime()));
-		params.add(new java.sql.Timestamp(end.getTime()));
+		params.add(java.sql.Date.valueOf(start));
+		params.add(java.sql.Date.valueOf(end));
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
@@ -180,5 +183,65 @@ public class BookingsImpl implements Bookings {
 	@Override
 	public boolean contains(Booking item) throws IOException {
 		return ds.exists(item.id());
+	}
+
+	@Override
+	public List<Booking> at(LocalDate date) throws IOException {
+		
+		RoomMetadata rmDm = RoomMetadata.create();
+		String statement = String.format( "SELECT bk.%s FROM %s bk "
+										+ "JOIN %s rm ON rm.%s = bk.%s "
+										+ "WHERE bk.%s::date <= ? AND bk.%s::date >= ? "
+										+ "ORDER BY rm.%s ASC", 
+										dm.keyName(), dm.domainName(), 
+										rmDm.domainName(), rmDm.keyName(), dm.roomIdKey(),
+										dm.startDateKey(), dm.endDateKey(), 
+										rmDm.numberKey());
+		
+		List<Object> params = new ArrayList<Object>();
+		params.add(java.sql.Date.valueOf(date));
+		params.add(java.sql.Date.valueOf(date));
+		
+		return ds.find(statement, params)
+				 .stream()
+				 .map(m -> build(m))
+				 .collect(Collectors.toList());
+	}
+
+	@Override
+	public double monthOccupationRate(LocalDate date) throws IOException {
+		LocalDate start = date.withDayOfMonth(1);
+		LocalDate end = date.withDayOfMonth(date.lengthOfMonth());
+		
+		return calculateOccupationRate(start, end);
+	}
+
+	@Override
+	public double weekWorkDayOccupationRate(LocalDate date) throws IOException{
+		LocalDate start = date.with(DayOfWeek.MONDAY);
+		LocalDate end = date.with(DayOfWeek.THURSDAY);
+		
+		return calculateOccupationRate(start, end);
+	}
+
+	@Override
+	public double weekendOccupationRate(LocalDate date) throws IOException{
+		LocalDate start = date.with(DayOfWeek.FRIDAY);
+		LocalDate end = date.with(DayOfWeek.SUNDAY);
+		
+		return calculateOccupationRate(start, end);
+	}
+	
+	private double calculateOccupationRate(LocalDate start, LocalDate end) throws IOException {
+		double numberOfDays = Period.between(start, end).getDays() + 1;
+		
+		double numberOfOccupations = 0;
+		for (int i = 0; i < numberOfDays; i++) {
+			numberOfOccupations += at(start.plusDays(i)).size();
+		}
+		
+		double numberOfRooms = new AllRoomsImpl(base).all().size();
+		
+		return (numberOfOccupations / (numberOfRooms * numberOfDays));
 	}
 }

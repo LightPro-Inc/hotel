@@ -120,7 +120,7 @@ public class RoomsImpl implements Rooms {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(dm.numberKey(), number);	
 		params.put(dm.floorKey(), floor);
-		params.put(dm.statusKey(), BookingStatus.NEW.toString());
+		params.put(dm.statusKey(), BookingStatus.NEW.name());
 		params.put(dm.statusKey(), RoomStatus.READY.name());
 		params.put(dm.roomcategoryIdKey(), this.roomcategoryid);
 		

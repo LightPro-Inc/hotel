@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
 
@@ -14,7 +15,6 @@ import com.hotel.domains.api.MaidMetadata;
 import com.hotel.domains.api.Maids;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
-import com.infrastructure.datasource.Base.OrderDirection;
 import com.infrastructure.datasource.DomainStore;
 import com.infrastructure.datasource.DomainsStore;
 import com.securities.api.Person;
@@ -42,12 +42,21 @@ public class MaidsImpl implements Maids {
 	public List<Maid> all() throws IOException {
 		List<Maid> values = new ArrayList<Maid>();
 		
-		List<DomainStore> results = ds.getAllOrdered(PersonImpl.dm().lastNameKey(), OrderDirection.ASC);
+		List<DomainStore> results = ds.getAll();
 		for (DomainStore domainStore : results) {
 			values.add(build(domainStore.key())); 
 		}		
 		
-		return values;
+		return values.stream()
+				     .sorted((e1, e2) -> {
+						try {
+							return e1.lastName().compareTo(e2.lastName());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return 0;
+					})
+				     .collect(Collectors.toList());
 	}
 
 	@Override
@@ -129,5 +138,19 @@ public class MaidsImpl implements Maids {
 			throw new NotFoundException("Le client n'a pas été trouvé !");
 		
 		return item;
+	}
+
+	@Override
+	public List<Maid> actives() throws IOException {
+		return all().stream()
+				    .filter(m -> {
+						try {
+							return m.active();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return false;
+					})
+				    .collect(Collectors.toList());
 	}
 }

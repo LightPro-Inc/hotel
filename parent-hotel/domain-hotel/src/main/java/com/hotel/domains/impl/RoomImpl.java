@@ -1,6 +1,7 @@
 package com.hotel.domains.impl;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,14 +111,17 @@ public class RoomImpl implements Room {
 
 	@Override
 	public boolean isFree() throws IOException {
+		LocalDate day = LocalDate.now();
 		
 		BookingMetadata bkDm = BookingMetadata.create();
 		String statement = String.format("SELECT %s FROM %s "
-											+ "WHERE %s::date <= now() AND %s::date >= now() AND %s=?",
+											+ "WHERE %s::date <= ? AND %s::date >= ? AND %s=?",
 											bkDm.keyName(), bkDm.domainName(),
 											bkDm.startDateKey(), bkDm.endDateKey(), bkDm.roomIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
+		params.add(java.sql.Date.valueOf(day));
+		params.add(java.sql.Date.valueOf(day));
 		params.add(this.id);
 		
 		Optional<DomainStore> bkDs = base.domainsStore(bkDm).getFirstDs(statement, params);
@@ -134,13 +138,17 @@ public class RoomImpl implements Room {
 
 	@Override
 	public boolean isOccupied() throws IOException {
+		LocalDate day = LocalDate.now();
+		
 		BookingMetadata bkDm = BookingMetadata.create();
 		String statement = String.format("SELECT %s FROM %s "
-											+ "WHERE %s::date <= now() AND %s::date >= now() AND %s=?",
+											+ "WHERE %s::date <= ? AND %s::date >= ? AND %s=?",
 											bkDm.keyName(), bkDm.domainName(),
 											bkDm.startDateKey(), bkDm.endDateKey(), bkDm.roomIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
+		params.add(java.sql.Date.valueOf(day));
+		params.add(java.sql.Date.valueOf(day));
 		params.add(this.id);
 		
 		Optional<DomainStore> bkDs = base.domainsStore(bkDm).getFirstDs(statement, params);
@@ -157,13 +165,17 @@ public class RoomImpl implements Room {
 
 	@Override
 	public boolean isReserved() throws IOException {
+		LocalDate day = LocalDate.now();
+		
 		BookingMetadata bkDm = BookingMetadata.create();
 		String statement = String.format("SELECT %s FROM %s "
-											+ "WHERE %s::date <= now() AND %s::date >= now() AND %s=?",
+											+ "WHERE %s::date <= ? AND %s::date >= ? AND %s=?",
 											bkDm.keyName(), bkDm.domainName(),
 											bkDm.startDateKey(), bkDm.endDateKey(), bkDm.roomIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
+		params.add(java.sql.Date.valueOf(day));
+		params.add(java.sql.Date.valueOf(day));
 		params.add(this.id);
 		
 		Optional<DomainStore> bkDs = base.domainsStore(bkDm).getFirstDs(statement, params);

@@ -1,10 +1,11 @@
 package com.hotel.domains.impl;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -63,13 +64,15 @@ public class BookingImpl implements Booking {
 	}
 
 	@Override
-	public Date start() throws IOException {
-		return ds.get(dm.startDateKey());				
+	public LocalDateTime start() throws IOException {
+		Timestamp ts = ds.get(dm.startDateKey());
+		return ts.toLocalDateTime();
 	}
 
 	@Override
-	public Date end() throws IOException {
-		return ds.get(dm.endDateKey());
+	public LocalDateTime end() throws IOException {
+		Timestamp ts = ds.get(dm.endDateKey());
+		return ts.toLocalDateTime();
 	}
 
 	@Override
@@ -79,8 +82,8 @@ public class BookingImpl implements Booking {
 		
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime today = now.truncatedTo(ChronoUnit.DAYS);		
-		LocalDateTime start = LocalDateTime.ofInstant(start().toInstant(), ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
-		LocalDateTime end = LocalDateTime.ofInstant(end().toInstant(), ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+		LocalDateTime start = start().truncatedTo(ChronoUnit.DAYS);
+		LocalDateTime end = end().truncatedTo(ChronoUnit.DAYS);
 		
 		switch(status){
 			case NEW:				
@@ -159,20 +162,18 @@ public class BookingImpl implements Booking {
 	}
 
 	@Override
-	public void move(Date newStart, Date newEnd, UUID newRoomId) throws IOException {
+	public void move(LocalDateTime newStart, LocalDateTime newEnd, UUID newRoomId) throws IOException {
 		
 		if(getStatus() == BookingStatus.CHECKEDOUT)
 			throw new IllegalArgumentException("Cette réservation ne peut être déplacée !");
 		
-		final long MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24; 
-    	long delta = newEnd.getTime() - newStart.getTime();
-    	long numberOfDays = delta / (MILLISECONDS_PER_DAY);
+    	long numberOfDays = ChronoUnit.DAYS.between(newStart, newEnd);
     	
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put(dm.startDateKey(), new java.sql.Timestamp(newStart.getTime()));	
-		params.put(dm.endDateKey(), new java.sql.Timestamp(newEnd.getTime()));
+		params.put(dm.startDateKey(), Timestamp.valueOf(newStart));	
+		params.put(dm.endDateKey(), Timestamp.valueOf(newEnd));
 		params.put(dm.roomIdKey(), newRoomId);
-		params.put(dm.statusKey(), BookingStatus.NEW.toString());
+		params.put(dm.statusKey(), BookingStatus.NEW.name());
 		params.put(dm.ttcTotalBookingAmountKey(), numberOfDays * nightPriceApplied());
 		params.put(dm.vatBookingAmountKey(), 0.18 * numberOfDays * nightPriceApplied());
 		
@@ -180,19 +181,17 @@ public class BookingImpl implements Booking {
 	}
 	
 	@Override
-	public void resize(Date newStart, Date newEnd) throws IOException {
+	public void resize(LocalDateTime newStart, LocalDateTime newEnd) throws IOException {
 		
 		if(getStatus() == BookingStatus.CHECKEDOUT)
 			throw new IllegalArgumentException("Cette réservation ne peut être modifiée !");
 		
-		final long MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24; 
-    	long delta = newEnd.getTime() - newStart.getTime();
-    	long numberOfDays = delta / (MILLISECONDS_PER_DAY);
+    	long numberOfDays = ChronoUnit.DAYS.between(newStart, newEnd);
     	
     	Map<String, Object> params = new HashMap<String, Object>();
-		params.put(dm.startDateKey(), new java.sql.Timestamp(newStart.getTime()));	
-		params.put(dm.endDateKey(), new java.sql.Timestamp(newEnd.getTime()));
-		params.put(dm.statusKey(), BookingStatus.NEW.toString());
+		params.put(dm.startDateKey(), Timestamp.valueOf(newStart));	
+		params.put(dm.endDateKey(), Timestamp.valueOf(newEnd));
+		params.put(dm.statusKey(), BookingStatus.NEW.name());
 		params.put(dm.ttcTotalBookingAmountKey(), numberOfDays * nightPriceApplied());
 		params.put(dm.vatBookingAmountKey(), 0.18 * numberOfDays * nightPriceApplied());
 		
@@ -211,7 +210,7 @@ public class BookingImpl implements Booking {
 	}
 	
 	private void changeStatus(BookingStatus newStatus) throws IOException {
-		ds.set(dm.statusKey(), newStatus.toString());
+		ds.set(dm.statusKey(), newStatus.name());
 	}
 
 	@Override
@@ -279,7 +278,7 @@ public class BookingImpl implements Booking {
 		
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime today = now.truncatedTo(ChronoUnit.DAYS);		
-		LocalDateTime start = LocalDateTime.ofInstant(start().toInstant(), ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS); 
+		LocalDateTime start = start().truncatedTo(ChronoUnit.DAYS); 
 		LocalDateTime arrivalDeadline = today.plusHours(18);
 
 		boolean bookingIsForToday = (status == BookingStatus.NEW || status == BookingStatus.CONFIRMED) && (start.isEqual(today) && now.isBefore(arrivalDeadline));
@@ -292,7 +291,7 @@ public class BookingImpl implements Booking {
 		
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime today = now.truncatedTo(ChronoUnit.DAYS);		
-		LocalDateTime end = LocalDateTime.ofInstant(end().toInstant(), ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+		LocalDateTime end = end().truncatedTo(ChronoUnit.DAYS);
 		LocalDateTime checkoutDeadline = today.plusHours(10);
 
 		boolean bookingFinishToday = status == BookingStatus.ARRIVED && (end.isEqual(today) && now.isBefore(checkoutDeadline));
@@ -311,8 +310,13 @@ public class BookingImpl implements Booking {
 	}
 
 	@Override
-	public Date deliveredDatePiece() throws IOException {
-		return ds.get(dm.deliveredDatePieceKey());
+	public LocalDate deliveredDatePiece() throws IOException {
+		java.sql.Date date = ds.get(dm.deliveredDatePieceKey());
+		
+		if(date == null)
+			return null;
+		
+		return date.toLocalDate();
 	}
 
 	@Override
@@ -341,12 +345,12 @@ public class BookingImpl implements Booking {
 	}
 
 	@Override
-	public void pieceInfos(String naturePiece, String numeroPiece, Date deliveredDatePiece, String editionPlacePiece, String editedByPiece) throws IOException {
+	public void pieceInfos(String naturePiece, String numeroPiece, LocalDate deliveredDatePiece, String editionPlacePiece, String editedByPiece) throws IOException {
 		
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(dm.naturePieceKey(), naturePiece);
 		params.put(dm.numeroPieceKey(), numeroPiece);	
-		params.put(dm.deliveredDatePieceKey(), deliveredDatePiece == null ? null : new java.sql.Date(deliveredDatePiece.getTime()));
+		params.put(dm.deliveredDatePieceKey(), deliveredDatePiece == null ? null : java.sql.Date.valueOf(deliveredDatePiece));
 		params.put(dm.editionPlacePieceKey(), editionPlacePiece);
 		params.put(dm.editedByPieceKey(), editedByPiece);
 		
@@ -362,5 +366,10 @@ public class BookingImpl implements Booking {
 		params.put(dm.exactDestinationKey(), exactDestination);;
 		
 		ds.set(params);
+	}
+
+	@Override
+	public int numberOfPeople() throws IOException {
+		return numberOfAdults() + numberOfChildren() + 1; // + 1 : l'hôte
 	}
 }

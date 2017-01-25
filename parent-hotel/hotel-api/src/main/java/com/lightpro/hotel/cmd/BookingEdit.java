@@ -1,6 +1,7 @@
 package com.lightpro.hotel.cmd;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,13 +11,13 @@ import com.hotel.domains.api.BookingStatus;
 public class BookingEdit {
 	
 	private final UUID guestId;
-	private final Date start;
-	private final Date end;
+	private final LocalDateTime start;
+	private final LocalDateTime end;
 	private final BookingStatus statusId;
 	private final double nightPriceApplied;
 	private final String naturePiece;
 	private final String numeroPiece;
-	private final Date deliveredDatePiece;
+	private final LocalDate deliveredDatePiece;
 	private final String editionPlacePiece;
 	private final String editedByPiece;
 	private final int numberOfChildren;
@@ -30,13 +31,13 @@ public class BookingEdit {
 	
 	@JsonCreator
 	public BookingEdit(@JsonProperty("guestId") final UUID guestId, 
-					@JsonProperty("start") final Date start,
-					@JsonProperty("end") final Date end,
+					@JsonProperty("start") final LocalDateTime start,
+					@JsonProperty("end") final LocalDateTime end,
 					@JsonProperty("statusId") final BookingStatus statusId,
 					@JsonProperty("nightPriceApplied") final double nightPriceApplied,
 					@JsonProperty("naturePiece") final String naturePiece, 
 					@JsonProperty("numeroPiece") final String numeroPiece,
-					@JsonProperty("deliveredDatePiece") final Date deliveredDatePiece, 
+					@JsonProperty("deliveredDatePiece") final LocalDate deliveredDatePiece, 
 					@JsonProperty("editionPlacePiece") final String editionPlacePiece,
 					@JsonProperty("editedByPiece") final String editedByPiece,
 					@JsonProperty("numberOfChildren") final int numberOfChildren,
@@ -64,11 +65,11 @@ public class BookingEdit {
 		return this.guestId;
 	}
 	
-	public Date start(){
+	public LocalDateTime start(){
 		return this.start;
 	}
 	
-	public Date end(){
+	public LocalDateTime end(){
 		return this.end;
 	}
 	
@@ -88,7 +89,7 @@ public class BookingEdit {
 		return this.numeroPiece;
 	}
 	
-	public Date deliveredDatePiece(){
+	public LocalDate deliveredDatePiece(){
 		return this.deliveredDatePiece;
 	}
 	

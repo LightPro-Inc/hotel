@@ -6,7 +6,9 @@ import java.util.UUID;
 
 import com.hotel.domains.api.Bookings;
 import com.hotel.domains.api.ConstRoomFloor;
+import com.hotel.domains.api.DayOccupations;
 import com.hotel.domains.api.Hotel;
+import com.hotel.domains.api.MaidDayJobs;
 import com.hotel.domains.api.Maids;
 import com.hotel.domains.api.RoomCategories;
 import com.hotel.domains.api.RoomFloor;
@@ -52,5 +54,15 @@ public class HotelImpl implements Hotel {
 	@Override
 	public Maids maids() throws IOException {
 		return new MaidsImpl(base);
+	}
+
+	@Override
+	public DayOccupations dayOccupations() throws IOException {
+		return new DayOccupationsImpl(bookings());
+	}
+
+	@Override
+	public MaidDayJobs maidDayJobs() throws IOException {
+		return new MaidDayJobsImpl(base);
 	}
 }

@@ -93,6 +93,91 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Path("/free")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getFreeRooms() throws IOException {
+		
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						List<RoomVm> roomsVm = hotel().allRooms()
+								.all()								
+							    .stream()
+							    .filter(m -> {
+									try {
+										return m.isFree();
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+									return false;
+								})
+							    .map(m -> new RoomVm(m))
+							    .collect(Collectors.toList());
+	
+						return Response.ok(roomsVm).build();
+					}
+				});			
+	}
+	
+	@GET
+	@Path("/occupied")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getRoomsOccupieds() throws IOException {
+		
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						List<RoomVm> roomsVm = hotel().allRooms().all()
+							    .stream()
+							    .filter(m -> {
+									try {
+										return m.isOccupied();
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+									return false;
+								})
+							    .map(m -> new RoomVm(m))
+							    .collect(Collectors.toList());
+	
+						return Response.ok(roomsVm).build();
+					}
+				});			
+	}
+	
+	@GET
+	@Path("/dirty")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response getRoomsDirties() throws IOException {
+		
+		return createHttpResponse(
+				new Callable<Response>(){
+					@Override
+					public Response call() throws IOException {
+						
+						List<RoomVm> roomsVm = hotel().allRooms().all()
+							    .stream()
+							    .filter(m -> {
+									try {
+										return m.status() == RoomStatus.DIRTY;
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+									return false;
+								})
+							    .map(m -> new RoomVm(m))
+							    .collect(Collectors.toList());
+	
+						return Response.ok(roomsVm).build();
+					}
+				});			
+	}
+	
+	@GET
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRooms(   @QueryParam("page") int page, 

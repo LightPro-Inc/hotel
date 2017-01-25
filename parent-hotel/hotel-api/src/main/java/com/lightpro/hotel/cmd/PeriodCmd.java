@@ -5,17 +5,16 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BookingPeriod {
-
+public class PeriodCmd {
 	private final LocalDate start;
 	private final LocalDate end;
 	
-	public BookingPeriod(){
-		throw new UnsupportedOperationException("#BookingPeriod()");
+	public PeriodCmd(){
+		throw new UnsupportedOperationException("#PeriodCmd()");
 	}
 	
 	@JsonCreator
-	public BookingPeriod(@JsonProperty("start") final LocalDate start, @JsonProperty("end") final LocalDate end){
+	public PeriodCmd(@JsonProperty("start") final LocalDate start, @JsonProperty("end") final LocalDate end){
 		
 		this.start = start;
 		this.end = end;

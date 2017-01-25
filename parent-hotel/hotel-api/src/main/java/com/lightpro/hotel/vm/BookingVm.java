@@ -1,7 +1,8 @@
 package com.lightpro.hotel.vm;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -46,12 +47,12 @@ public class BookingVm {
 	}
 	
 	@JsonGetter
-	public Date getStart() throws IOException{
+	public LocalDateTime getStart() throws IOException{
 		return this.booking.start();
 	}
 	
 	@JsonGetter
-	public Date getEnd() throws IOException{
+	public LocalDateTime getEnd() throws IOException{
 		return this.booking.end();
 	}
 	
@@ -121,7 +122,7 @@ public class BookingVm {
 	}
 	
 	@JsonGetter
-	public Date getDeliveredDatePiece() throws IOException{
+	public LocalDate getDeliveredDatePiece() throws IOException{
 		return this.booking.deliveredDatePiece();
 	}
 	

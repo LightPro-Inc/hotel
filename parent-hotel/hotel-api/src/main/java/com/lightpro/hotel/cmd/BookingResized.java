@@ -1,31 +1,31 @@
 package com.lightpro.hotel.cmd;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BookingResized {
-	private final Date newStart;
-	private final Date newEnd;
+	private final LocalDateTime newStart;
+	private final LocalDateTime newEnd;
 	
 	public BookingResized(){
 		throw new UnsupportedOperationException("#BookingResized()");
 	}
 	
 	@JsonCreator
-	public BookingResized(@JsonProperty("newStart") final Date newStart,
-						  @JsonProperty("newEnd") final Date newEnd){
+	public BookingResized(@JsonProperty("newStart") final LocalDateTime newStart,
+						  @JsonProperty("newEnd") final LocalDateTime newEnd){
 		
 		this.newStart = newStart;
 		this.newEnd = newEnd;
 	}
 	
-	public Date newStart(){
+	public LocalDateTime newStart(){
 		return this.newStart;
 	}
 	
-	public Date newEnd(){
+	public LocalDateTime newEnd(){
 		return this.newEnd;
 	}
 }
