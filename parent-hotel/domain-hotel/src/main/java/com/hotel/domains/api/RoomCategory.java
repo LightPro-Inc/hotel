@@ -6,7 +6,7 @@ import java.util.UUID;
 import com.infrastructure.core.Queryable;
 import com.infrastructure.core.Recordable;
 
-public interface RoomCategory extends Recordable<UUID> {
+public interface RoomCategory extends Recordable<UUID, RoomCategory> {
 	String name() throws IOException;
 	int capacity() throws IOException;
 	double nightPrice() throws IOException;	

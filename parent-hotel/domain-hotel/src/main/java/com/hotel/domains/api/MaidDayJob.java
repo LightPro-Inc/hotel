@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface MaidDayJob extends Recordable<UUID> {
+public interface MaidDayJob extends Recordable<UUID, MaidDayJob> {
 	LocalDate day() throws IOException;
 	Maid maid() throws IOException;
 	MaidDayJobStatus status() throws IOException;

@@ -87,7 +87,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						RoomCategory entity = hotel().roomCategories().findSingle(id);
+						RoomCategory entity = hotel().roomCategories().get(id);
 						RoomCategoryVm vm = new RoomCategoryVm(entity);
 						
 						return Response.ok(vm).build();
@@ -124,7 +124,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						RoomCategory roomCategory = hotel().roomCategories().findSingle(id);
+						RoomCategory roomCategory = hotel().roomCategories().get(id);
 						roomCategory.update(data.name(), data.capacity(), data.nightPrice());
 
 						return Response.noContent().build();
@@ -143,7 +143,8 @@ public class RoomCategoryRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().roomCategories().delete(id);
+						RoomCategory item = hotel().roomCategories().get(id);
+						hotel().roomCategories().delete(item);
 						
 						return Response.noContent().build();
 					}
@@ -161,7 +162,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().roomCategories().findSingle(id).rooms().add(data.number(), data.floorId());		
+						Room room = hotel().roomCategories().get(id).rooms().add(data.number(), data.floorId());		
 
 						return Response.status(Status.CREATED)
 								       .entity(new RoomVm(room))
@@ -181,7 +182,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<RoomVm> roomsVm = hotel().roomCategories().findSingle(id)
+						List<RoomVm> roomsVm = hotel().roomCategories().get(id)
 								 .rooms()
 								 .all()
 							     .stream()
@@ -207,7 +208,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Rooms rooms = hotel().roomCategories().findSingle(id).rooms();
+						Rooms rooms = hotel().roomCategories().get(id).rooms();
 						
 						List<RoomVm> roomsVm = rooms.find(page, pageSize, filter)
 												    .stream()

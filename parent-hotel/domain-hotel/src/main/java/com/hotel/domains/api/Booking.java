@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface Booking extends Recordable<UUID> {
+public interface Booking extends Recordable<UUID, Booking> {
 	
 	Guest guest() throws IOException;
 	Room room() throws IOException;

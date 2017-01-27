@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface Room extends Recordable<UUID> {
+public interface Room extends Recordable<UUID, Room> {
 	
 	String number() throws IOException;
 	RoomStatus status() throws IOException;

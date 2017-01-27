@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
@@ -131,7 +130,7 @@ public class MaidsImpl implements Maids {
 	}
 
 	@Override
-	public Maid get(UUID id) throws IOException {
+	public Maid get(Object id) throws IOException {
 		Maid item = build(id);
 		
 		if(!item.isPresent())

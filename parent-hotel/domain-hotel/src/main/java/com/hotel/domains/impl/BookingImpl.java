@@ -372,4 +372,14 @@ public class BookingImpl implements Booking {
 	public int numberOfPeople() throws IOException {
 		return numberOfAdults() + numberOfChildren() + 1; // + 1 : l'hôte
 	}
+	
+	@Override
+	public boolean isEqual(Booking item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Booking item) throws IOException {
+		return !isEqual(item);
+	}
 }

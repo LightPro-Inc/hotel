@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.hotel.domains.api.BookingStatus;
 import com.hotel.domains.api.Room;
+import com.hotel.domains.api.RoomCategory;
 import com.hotel.domains.api.RoomMetadata;
 import com.hotel.domains.api.RoomStatus;
 import com.hotel.domains.api.Rooms;
@@ -28,13 +29,13 @@ public class RoomsImpl implements Rooms {
 	private transient final Base base;
 	private final transient RoomMetadata dm;
 	private final transient DomainsStore ds;
-	private final transient Object roomcategoryid;
+	private final transient RoomCategory roomCategory;
 	
 	public RoomsImpl(final Base base, Object roomcategoryid){
 		this.base = base;
 		this.dm = RoomMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);
-		this.roomcategoryid = roomcategoryid;
+		this.roomCategory = new RoomCategoryImpl(base, roomcategoryid);
 	}
 	
 	@Override
@@ -66,7 +67,7 @@ public class RoomsImpl implements Rooms {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.roomcategoryid);
+		params.add(roomCategory.id());
 		params.add("%" + filter + "%");
 		
 		if(pageSize > 0){
@@ -95,7 +96,7 @@ public class RoomsImpl implements Rooms {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.roomcategoryid);
+		params.add(this.roomCategory.id());
 		params.add("%" + filter + "%");
 		
 		List<Object> results = ds.find(statement, params);
@@ -122,7 +123,7 @@ public class RoomsImpl implements Rooms {
 		params.put(dm.floorKey(), floor);
 		params.put(dm.statusKey(), BookingStatus.NEW.name());
 		params.put(dm.statusKey(), RoomStatus.READY.name());
-		params.put(dm.roomcategoryIdKey(), this.roomcategoryid);
+		params.put(dm.roomcategoryIdKey(), roomCategory.id());
 		
 		UUID id = UUID.randomUUID();
 		ds.set(id, params);
@@ -131,16 +132,14 @@ public class RoomsImpl implements Rooms {
 	}
 
 	@Override
-	public void delete(UUID id)  throws IOException {
-		Room room = build(id);
-		
-		if(room.isPresent() && room.category().id().equals(this.roomcategoryid))
-			delete(id);		
+	public void delete(Room item)  throws IOException {	
+		if(contains(item))
+			ds.delete(item.id());		
 	}
 
 	
 	@Override	
-	public Room findSingle(String number) throws IOException {
+	public Room get(String number) throws IOException {
 		List<DomainStore> results= ds.getAllByKey(dm.numberKey(), number);
 		
 		if(results.isEmpty())
@@ -150,10 +149,10 @@ public class RoomsImpl implements Rooms {
 	}
 
 	@Override
-	public Room findSingle(UUID id) throws IOException {
+	public Room get(Object id) throws IOException {
 		Room item = build(id);
 		
-		if(!item.isPresent() && item.category().id().equals(this.roomcategoryid))
+		if(!contains(item))
 			throw new NotFoundException("La chambre n'a pas été trouvée !");
 		
 		return item;
@@ -166,7 +165,7 @@ public class RoomsImpl implements Rooms {
 
 	@Override
 	public boolean contains(Room item) throws IOException {
-		return ds.exists(item.id());
+		return item.isPresent() && item.category().isEqual(roomCategory);
 	}
 
 	@Override

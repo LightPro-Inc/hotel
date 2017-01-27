@@ -3,7 +3,6 @@ package com.hotel.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
@@ -90,8 +89,8 @@ public class AllRoomsImpl implements Rooms {
 	}
 
 	@Override
-	public void delete(UUID id) throws IOException {
-		ds.delete(id);		
+	public void delete(Room item) throws IOException {
+		ds.delete(item.id());		
 	}
 
 	@Override
@@ -100,7 +99,7 @@ public class AllRoomsImpl implements Rooms {
 	}
 
 	@Override
-	public Room findSingle(String number) throws IOException {
+	public Room get(String number) throws IOException {
 		
 		return ds.getAllByKey(dm.numberKey(), number)
 				 .stream()
@@ -110,7 +109,7 @@ public class AllRoomsImpl implements Rooms {
 	}
 
 	@Override
-	public Room findSingle(UUID id) throws IOException {
+	public Room get(Object id) throws IOException {
 		Room item = build(id);
 		
 		if(!item.isPresent())

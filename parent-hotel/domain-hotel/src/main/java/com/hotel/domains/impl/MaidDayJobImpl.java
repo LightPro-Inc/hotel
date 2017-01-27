@@ -78,4 +78,15 @@ public class MaidDayJobImpl implements MaidDayJob {
 	public void markAbsent() throws IOException {
 		ds.set(dm.statusKey(), MaidDayJobStatus.MAID_ABSENT.name());
 	}
+	
+	@Override
+	public boolean isEqual(MaidDayJob item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(MaidDayJob item) throws IOException {
+		return !isEqual(item);
+	}
+
 }

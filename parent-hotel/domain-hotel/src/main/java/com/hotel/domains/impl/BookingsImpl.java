@@ -91,8 +91,13 @@ public class BookingsImpl implements Bookings {
 	}
 
 	@Override
-	public Booking findSingle(UUID id) throws IOException {
-		return new BookingImpl(this.base, id);
+	public Booking get(Object id) throws IOException {
+		Booking item = build(id);
+		
+		if(!item.isPresent())
+			throw new IllegalArgumentException("La réservation n'a pas été trouvée !");
+		
+		return item;
 	}
 
 	@Override
@@ -243,5 +248,10 @@ public class BookingsImpl implements Bookings {
 		double numberOfRooms = new AllRoomsImpl(base).all().size();
 		
 		return (numberOfOccupations / (numberOfRooms * numberOfDays));
+	}
+
+	@Override
+	public void delete(Booking item) throws IOException {
+		ds.delete(item.id());
 	}
 }

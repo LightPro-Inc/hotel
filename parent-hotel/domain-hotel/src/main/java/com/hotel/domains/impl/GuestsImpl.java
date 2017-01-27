@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.hotel.domains.api.Guest;
@@ -42,11 +41,6 @@ public class GuestsImpl implements Guests {
 		ds.set(person.id(), new HashMap<String, Object>());
 		
 		return build(person.id());
-	}
-
-	@Override
-	public Guest findSingle(UUID id) throws IOException {
-		return new GuestImpl(this.base, id);
 	}
 
 	@Override
@@ -116,5 +110,15 @@ public class GuestsImpl implements Guests {
 		ds.set(item.id(), new HashMap<String, Object>());
 		
 		return build(item.id());
+	}
+
+	@Override
+	public Guest get(Object id) throws IOException {
+		Guest item = build(id);
+		
+		if(!item.isPresent())
+			throw new IllegalArgumentException("Le hôte n'a pas été trouvé !");
+		
+		return item;
 	}
 }

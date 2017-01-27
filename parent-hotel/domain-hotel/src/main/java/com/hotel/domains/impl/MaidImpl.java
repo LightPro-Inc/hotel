@@ -107,4 +107,15 @@ public class MaidImpl implements Maid {
 	public void activate(boolean active) throws IOException {
 		ds.set(dm.activeKey(), active);		
 	}
+	
+	@Override
+	public boolean isEqual(Person item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Person item) throws IOException {
+		return !isEqual(item);
+	}
+
 }

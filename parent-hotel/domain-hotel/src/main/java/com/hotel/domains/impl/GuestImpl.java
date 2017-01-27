@@ -107,4 +107,15 @@ public class GuestImpl implements Guest {
 	public void update(String firstName, String lastName, Sex sex, String address, Date birthDate, String tel1, String tel2, String email, String photo) throws IOException {
 		this.identity.update(firstName, lastName, sex, address, birthDate, tel1, tel2, email, photo);	
 	}
+
+	@Override
+	public boolean isEqual(Person item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Person item) throws IOException {
+		return !isEqual(item);
+	}
+
 }

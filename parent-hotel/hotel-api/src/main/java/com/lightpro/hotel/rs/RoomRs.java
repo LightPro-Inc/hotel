@@ -214,7 +214,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room entity = hotel().allRooms().findSingle(number);
+						Room entity = hotel().allRooms().get(number);
 						if(entity == null)
 							return Response.status(Status.NOT_FOUND).build();
 						
@@ -235,7 +235,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().findSingle(id);
+						Room room = hotel().allRooms().get(id);
 						room.update(data.number(), data.floorId());
 
 						return Response.status(Status.NO_CONTENT).build();
@@ -253,7 +253,8 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().allRooms().delete(number);
+						Room item = hotel().allRooms().get(number);
+						hotel().allRooms().delete(item);
 						
 						return Response.noContent().build();
 					}
@@ -289,7 +290,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().findSingle(id);
+						Room room = hotel().allRooms().get(id);
 						room.changeStatus(RoomStatus.CLEANUP);	
 
 						return Response.ok(new RoomVm(room)).build();
@@ -307,7 +308,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().findSingle(id);
+						Room room = hotel().allRooms().get(id);
 						room.changeStatus(RoomStatus.DIRTY);	
 
 						return Response.ok(new RoomVm(room)).build();
@@ -325,7 +326,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().findSingle(id);
+						Room room = hotel().allRooms().get(id);
 						room.changeStatus(RoomStatus.OUTOFSERVICE);	
 
 						return Response.ok(new RoomVm(room)).build();
@@ -343,7 +344,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().findSingle(id);
+						Room room = hotel().allRooms().get(id);
 						room.changeStatus(RoomStatus.READY);	
 
 						return Response.ok(new RoomVm(room)).build();

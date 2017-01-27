@@ -189,4 +189,15 @@ public class RoomImpl implements Room {
 		}else
 			return false;
 	}
+	
+	@Override
+	public boolean isEqual(Room item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Room item) throws IOException {
+		return !isEqual(item);
+	}
+
 }

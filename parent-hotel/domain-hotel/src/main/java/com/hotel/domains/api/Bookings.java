@@ -6,13 +6,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.infrastructure.core.Queryable;
+import com.infrastructure.core.AdvancedQueryable;
+import com.infrastructure.core.Updatable;
 
-public interface Bookings extends Queryable<Booking> {
+public interface Bookings extends AdvancedQueryable<Booking>, Updatable<Booking> {
 	Booking book(UUID guestid, UUID roomid, LocalDateTime start, LocalDateTime end, double nightPriceApplied) throws IOException;
 	List<Booking> at(LocalDate date) throws IOException;
 	List<Booking> between(LocalDate start, LocalDate end) throws IOException;	
-	Booking findSingle(UUID id) throws IOException;
 	Guests guests() throws IOException;
 	
 	double monthOccupationRate(LocalDate date) throws IOException;

@@ -7,28 +7,29 @@ import java.util.stream.Collectors;
 
 import com.hotel.domains.api.Booking;
 import com.hotel.domains.api.BookingMetadata;
+import com.hotel.domains.api.Guest;
 import com.hotel.domains.api.GuestMetadata;
 import com.hotel.domains.api.RoomMetadata;
+import com.infrastructure.core.AdvancedQueryable;
 import com.infrastructure.core.HorodateMetadata;
-import com.infrastructure.core.Queryable;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainsStore;
 import com.securities.api.PersonMetadata;
 import com.securities.impl.PersonImpl;
 
-public class BookingsOfGuestImpl implements Queryable<Booking> {
+public class BookingsOfGuestImpl implements AdvancedQueryable<Booking> {
 
 	private transient final Base base;
 	private final transient BookingMetadata dm;
 	private final transient DomainsStore ds;
-	private final transient Object guestId;
+	private final transient Guest guest;
 	
 	public BookingsOfGuestImpl(final Base base, Object guestId){
 		this.base = base;
 		this.dm = BookingMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);	
-		this.guestId = guestId;
+		this.guest = new GuestImpl(base, guestId);
 	}
 	
 	@Override
@@ -63,7 +64,7 @@ public class BookingsOfGuestImpl implements Queryable<Booking> {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.guestId);
+		params.add(this.guest.id());
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
 		
@@ -100,7 +101,7 @@ public class BookingsOfGuestImpl implements Queryable<Booking> {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.guestId);
+		params.add(this.guest.id());
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
 		
@@ -116,5 +117,15 @@ public class BookingsOfGuestImpl implements Queryable<Booking> {
 	@Override
 	public boolean contains(Booking item) throws IOException {
 		return ds.exists(item.id());
+	}
+
+	@Override
+	public Booking get(Object id) throws IOException {
+		Booking item = build(id);
+		
+		if(!item.isPresent() || item.guest().isNotEqual(guest))
+			throw new IllegalArgumentException("La réservation n'a pas été trouvée !");
+		
+		return item;
 	}
 }

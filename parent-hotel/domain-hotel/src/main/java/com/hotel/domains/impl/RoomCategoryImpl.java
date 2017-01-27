@@ -90,4 +90,15 @@ public class RoomCategoryImpl implements RoomCategory {
 	public Queryable<Booking> bookings() throws IOException {
 		return new BookingsOfRoomCategoryImpl(this.base, this.id);
 	}
+	
+	@Override
+	public boolean isEqual(RoomCategory item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(RoomCategory item) throws IOException {
+		return !isEqual(item);
+	}
+
 }

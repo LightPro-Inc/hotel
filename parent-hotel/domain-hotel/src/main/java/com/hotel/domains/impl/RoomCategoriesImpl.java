@@ -79,8 +79,13 @@ public class RoomCategoriesImpl implements RoomCategories {
 	}
 
 	@Override
-	public RoomCategory findSingle(UUID id)  throws IOException {
-		return new RoomCategoryImpl(this.base, id);
+	public RoomCategory get(Object id)  throws IOException {
+		RoomCategory item = build(id);
+		
+		if(!item.isPresent())
+			throw new IllegalArgumentException("La catégorie de chambre n'a pas été trouvée !");
+		
+		return item;
 	}
 
 	@Override
@@ -112,8 +117,8 @@ public class RoomCategoriesImpl implements RoomCategories {
 	}
 
 	@Override
-	public void delete(UUID id) throws IOException {
-		ds.delete(id);
+	public void delete(RoomCategory item) throws IOException {
+		ds.delete(item.id());
 	}
 
 	@Override

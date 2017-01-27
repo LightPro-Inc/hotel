@@ -8,25 +8,26 @@ import java.util.stream.Collectors;
 
 import com.hotel.domains.api.Booking;
 import com.hotel.domains.api.BookingMetadata;
+import com.hotel.domains.api.RoomCategory;
 import com.hotel.domains.api.RoomMetadata;
+import com.infrastructure.core.AdvancedQueryable;
 import com.infrastructure.core.HorodateMetadata;
-import com.infrastructure.core.Queryable;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainsStore;
 
-public class BookingsOfRoomCategoryImpl implements Queryable<Booking> {
+public class BookingsOfRoomCategoryImpl implements AdvancedQueryable<Booking> {
 
 	private transient final Base base;
 	private final transient BookingMetadata dm;
 	private final transient DomainsStore ds;
-	private final transient Object roomCategoryId;
+	private final transient RoomCategory roomCategory;
 	
 	public BookingsOfRoomCategoryImpl(Base base, Object roomCategoryId){
 		this.base = base;
 		this.dm = BookingMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);	
-		this.roomCategoryId = roomCategoryId;
+		this.roomCategory = new RoomCategoryImpl(base, roomCategoryId);
 	}
 	
 	@Override
@@ -54,7 +55,7 @@ public class BookingsOfRoomCategoryImpl implements Queryable<Booking> {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.roomCategoryId);
+		params.add(this.roomCategory.id());
 		params.add("%" + filter + "%");
 		
 		if(pageSize > 0){
@@ -83,7 +84,7 @@ public class BookingsOfRoomCategoryImpl implements Queryable<Booking> {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.roomCategoryId);
+		params.add(this.roomCategory.id());
 		params.add("%" + filter + "%");
 		
 		List<Object> results = ds.find(statement, params);
@@ -98,5 +99,15 @@ public class BookingsOfRoomCategoryImpl implements Queryable<Booking> {
 	@Override
 	public boolean contains(Booking item) throws IOException {
 		return ds.exists(item.id());
+	}
+
+	@Override
+	public Booking get(Object id) throws IOException {
+		Booking item = build(id);
+		
+		if(!item.isPresent() && item.room().category().isNotEqual(roomCategory))
+			throw new IllegalArgumentException("La réservation n'a pas été trouvée !");
+		
+		return item;
 	}
 }

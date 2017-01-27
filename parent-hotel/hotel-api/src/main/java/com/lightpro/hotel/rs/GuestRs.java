@@ -39,7 +39,7 @@ public class GuestRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Guest guest = hotel().bookings().guests().findSingle(id);
+						Guest guest = hotel().bookings().guests().get(id);
 						
 						if(guest == null)
 							return Response.status(Status.NOT_FOUND).build();
@@ -115,7 +115,7 @@ public class GuestRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Guest guest = hotel().bookings().guests().findSingle(id);
+						Guest guest = hotel().bookings().guests().get(id);
 						
 						if(guest.id() == null)
 							return Response.status(Status.NOT_FOUND)

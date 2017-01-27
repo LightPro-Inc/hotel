@@ -55,7 +55,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Booking booking = hotel().bookings().findSingle(id);
+						Booking booking = hotel().bookings().get(id);
 						
 						if(booking == null)
 							return Response.status(Status.NOT_FOUND).build();
@@ -133,7 +133,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Booking booking = hotel().bookings().findSingle(id);
+						Booking booking = hotel().bookings().get(id);
 						
 						if(booking.guest().id() == null)
 							return Response.status(Status.NOT_FOUND).build();
@@ -298,7 +298,7 @@ public class BookingRs extends HotelBaseRs {
 						}
 						
 						// 2 - attribuer la reservation a l'hote
-						Booking booking = bookings.findSingle(id);		
+						Booking booking = bookings.get(id);		
 						booking.identifyGuest(guest.id());
 													
 						return Response.ok(new GuestVm(guest)).build();
@@ -316,7 +316,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Booking booking = hotel().bookings().findSingle(id);
+						Booking booking = hotel().bookings().get(id);
 						booking.move(bm.newStart(), bm.newEnd(), bm.newRoomId());
 							
 						return Response.noContent().build();
@@ -334,7 +334,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Booking booking = hotel().bookings().findSingle(id);
+						Booking booking = hotel().bookings().get(id);
 						booking.resize(br.newStart(), br.newEnd());
 							
 						return Response.noContent().build();
@@ -352,7 +352,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Booking booking = hotel().bookings().findSingle(id);
+						Booking booking = hotel().bookings().get(id);
 						booking.confirm();
 
 						return Response.ok(new BookingVm(booking)).build();
@@ -370,7 +370,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().bookings().findSingle(id).cancel();
+						hotel().bookings().get(id).cancel();
 						
 						return Response.noContent().build();
 					}
@@ -387,7 +387,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().bookings().findSingle(id).checkIn();
+						hotel().bookings().get(id).checkIn();
 						
 						return Response.noContent().build();
 					}
@@ -404,7 +404,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().bookings().findSingle(id).checkOut();
+						hotel().bookings().get(id).checkOut();
 						
 						return Response.noContent().build();
 					}
@@ -487,7 +487,7 @@ public class BookingRs extends HotelBaseRs {
 							}					
 						}
 						
-						Booking booking = hotel().bookings().findSingle(id);
+						Booking booking = hotel().bookings().get(id);
 						booking.pieceInfos(data.naturePiece(), data.numeroPiece(), data.deliveredDatePiece(), data.editionPlacePiece(), data.editedByPiece());
 						booking.otherInfos(data.numberOfChildren(), data.numberOfAdults(), data.exactDestination());
 
