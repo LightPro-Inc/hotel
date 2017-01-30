@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.RoomCategories;
 import com.hotel.domains.api.RoomCategory;
 import com.hotel.domains.api.RoomCategoryMetadata;
@@ -79,7 +80,7 @@ public class RoomCategoriesImpl implements RoomCategories {
 	}
 
 	@Override
-	public RoomCategory get(Object id)  throws IOException {
+	public RoomCategory get(UUID id)  throws IOException {
 		RoomCategory item = build(id);
 		
 		if(!item.isPresent())
@@ -112,7 +113,7 @@ public class RoomCategoriesImpl implements RoomCategories {
 		}
 		
 		return ds.findDs(statement, params).stream()
-					  					   .map(m -> build(m.key()))
+					  					   .map(m -> build(UUIDConvert.fromObject(m.key())))
 				  					   	   .collect(Collectors.toList());		
 	}
 
@@ -122,12 +123,17 @@ public class RoomCategoriesImpl implements RoomCategories {
 	}
 
 	@Override
-	public RoomCategory build(Object id) {
+	public RoomCategory build(UUID id) {
 		return new RoomCategoryImpl(base, id);
 	}
 
 	@Override
-	public boolean contains(RoomCategory item) throws IOException {
-		return ds.exists(item.id());
+	public boolean contains(RoomCategory item) {
+		try {
+			return ds.exists(item.id());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

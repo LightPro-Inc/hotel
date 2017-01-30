@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Maid;
 import com.hotel.domains.api.MaidMetadata;
 import com.hotel.domains.api.Maids;
@@ -43,7 +45,7 @@ public class MaidsImpl implements Maids {
 		
 		List<DomainStore> results = ds.getAll();
 		for (DomainStore domainStore : results) {
-			values.add(build(domainStore.key())); 
+			values.add(build(UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values.stream()
@@ -59,13 +61,18 @@ public class MaidsImpl implements Maids {
 	}
 
 	@Override
-	public Maid build(Object id) {
+	public Maid build(UUID id) {
 		return new MaidImpl(base, id);
 	}
 
 	@Override
-	public boolean contains(Maid item) throws IOException {
-		return ds.exists(item.id());
+	public boolean contains(Maid item) {
+		try {
+			return ds.exists(item.id());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -95,7 +102,7 @@ public class MaidsImpl implements Maids {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(build(domainStore.key())); 
+			values.add(build(UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;
@@ -130,7 +137,7 @@ public class MaidsImpl implements Maids {
 	}
 
 	@Override
-	public Maid get(Object id) throws IOException {
+	public Maid get(UUID id) throws IOException {
 		Maid item = build(id);
 		
 		if(!item.isPresent())

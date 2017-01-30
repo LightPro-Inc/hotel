@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Booking;
 import com.hotel.domains.api.RoomCategory;
 import com.hotel.domains.api.RoomCategoryMetadata;
@@ -21,11 +20,11 @@ import com.infrastructure.datasource.DomainStore;
 public class RoomCategoryImpl implements RoomCategory {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient RoomCategoryMetadata dm;
 	private final transient DomainStore ds;
 	
-	public RoomCategoryImpl(final Base base, final Object id){
+	public RoomCategoryImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = RoomCategoryMetadata.create();
@@ -39,12 +38,17 @@ public class RoomCategoryImpl implements RoomCategory {
 
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	@Override
@@ -87,17 +91,17 @@ public class RoomCategoryImpl implements RoomCategory {
 	}
 
 	@Override
-	public Queryable<Booking> bookings() throws IOException {
+	public Queryable<Booking, UUID> bookings() throws IOException {
 		return new BookingsOfRoomCategoryImpl(this.base, this.id);
 	}
 	
 	@Override
-	public boolean isEqual(RoomCategory item) throws IOException {
+	public boolean isEqual(RoomCategory item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(RoomCategory item) throws IOException {
+	public boolean isNotEqual(RoomCategory item) {
 		return !isEqual(item);
 	}
 

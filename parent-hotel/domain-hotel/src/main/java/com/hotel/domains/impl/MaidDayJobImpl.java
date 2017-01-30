@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Maid;
 import com.hotel.domains.api.MaidDayJob;
 import com.hotel.domains.api.MaidDayJobMetadata;
@@ -17,11 +16,11 @@ import com.infrastructure.datasource.DomainStore;
 public class MaidDayJobImpl implements MaidDayJob {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient MaidDayJobMetadata dm;
 	private final transient DomainStore ds;
 	
-	public MaidDayJobImpl(final Base base, final Object id){
+	public MaidDayJobImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = MaidDayJobMetadata.create();
@@ -35,12 +34,17 @@ public class MaidDayJobImpl implements MaidDayJob {
 
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -80,12 +84,12 @@ public class MaidDayJobImpl implements MaidDayJob {
 	}
 	
 	@Override
-	public boolean isEqual(MaidDayJob item) throws IOException {
+	public boolean isEqual(MaidDayJob item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(MaidDayJob item) throws IOException {
+	public boolean isNotEqual(MaidDayJob item) {
 		return !isEqual(item);
 	}
 

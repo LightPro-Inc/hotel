@@ -29,11 +29,11 @@ import com.infrastructure.datasource.DomainStore;
 public class RoomImpl implements Room {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient RoomMetadata dm;
 	private final transient DomainStore ds;
 	
-	public RoomImpl(final Base base, final Object id){
+	public RoomImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = RoomMetadata.create();
@@ -47,12 +47,17 @@ public class RoomImpl implements Room {
 
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	@Override
 	public String number() throws IOException {
@@ -127,7 +132,7 @@ public class RoomImpl implements Room {
 		Optional<DomainStore> bkDs = base.domainsStore(bkDm).getFirstDs(statement, params);
 		if(bkDs.isPresent())
 		{
-			Booking bk = new BookingImpl(base, bkDs.get().key());
+			Booking bk = new BookingImpl(base, UUIDConvert.fromObject(bkDs.get().key()));
 			if(bk.status() == BookingStatus.CHECKEDOUT || bk.status() == BookingStatus.CANCELLED)
 				return true;
 			else
@@ -154,7 +159,7 @@ public class RoomImpl implements Room {
 		Optional<DomainStore> bkDs = base.domainsStore(bkDm).getFirstDs(statement, params);
 		if(bkDs.isPresent())
 		{
-			Booking bk = new BookingImpl(base, bkDs.get().key());
+			Booking bk = new BookingImpl(base, UUIDConvert.fromObject(bkDs.get().key()));
 			if(bk.status() == BookingStatus.ARRIVED || bk.status() == BookingStatus.LATE_CHECKOUT)
 				return true;
 			else
@@ -181,7 +186,7 @@ public class RoomImpl implements Room {
 		Optional<DomainStore> bkDs = base.domainsStore(bkDm).getFirstDs(statement, params);
 		if(bkDs.isPresent())
 		{
-			Booking bk = new BookingImpl(base, bkDs.get().key());
+			Booking bk = new BookingImpl(base, UUIDConvert.fromObject(bkDs.get().key()));
 			if(bk.status() == BookingStatus.CONFIRMED || bk.status() == BookingStatus.LATE_ARRIVAL || bk.status() == BookingStatus.EXPIRED)
 				return true;
 			else
@@ -191,12 +196,12 @@ public class RoomImpl implements Room {
 	}
 	
 	@Override
-	public boolean isEqual(Room item) throws IOException {
+	public boolean isEqual(Room item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(Room item) throws IOException {
+	public boolean isNotEqual(Room item) {
 		return !isEqual(item);
 	}
 

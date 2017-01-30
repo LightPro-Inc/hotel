@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Booking;
 import com.hotel.domains.api.BookingMetadata;
 import com.hotel.domains.api.BookingStatus;
@@ -84,14 +85,14 @@ public class BookingsImpl implements Bookings {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(build(domainStore.key())); 
+			values.add(build(UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;		
 	}
 
 	@Override
-	public Booking get(Object id) throws IOException {
+	public Booking get(UUID id) throws IOException {
 		Booking item = build(id);
 		
 		if(!item.isPresent())
@@ -149,7 +150,7 @@ public class BookingsImpl implements Bookings {
 		}
 		
 		return ds.findDs(statement, params).stream()
-					  					   .map(m -> build(m.key()))
+					  					   .map(m -> build(UUIDConvert.fromObject(m.key())))
 				  					   	   .collect(Collectors.toList());
 	}
 
@@ -181,13 +182,18 @@ public class BookingsImpl implements Bookings {
 	}
 
 	@Override
-	public Booking build(Object id) {
+	public Booking build(UUID id) {
 		return new BookingImpl(base, id);
 	}
 
 	@Override
-	public boolean contains(Booking item) throws IOException {
-		return ds.exists(item.id());
+	public boolean contains(Booking item) {
+		try {
+			return ds.exists(item.id());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -209,7 +215,7 @@ public class BookingsImpl implements Bookings {
 		
 		return ds.find(statement, params)
 				 .stream()
-				 .map(m -> build(m))
+				 .map(m -> build(UUIDConvert.fromObject(m)))
 				 .collect(Collectors.toList());
 	}
 

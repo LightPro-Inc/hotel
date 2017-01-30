@@ -12,6 +12,7 @@ import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.BookingStatus;
 import com.hotel.domains.api.Room;
 import com.hotel.domains.api.RoomCategory;
@@ -31,7 +32,7 @@ public class RoomsImpl implements Rooms {
 	private final transient DomainsStore ds;
 	private final transient RoomCategory roomCategory;
 	
-	public RoomsImpl(final Base base, Object roomcategoryid){
+	public RoomsImpl(final Base base, UUID roomcategoryid){
 		this.base = base;
 		this.dm = RoomMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);
@@ -80,7 +81,7 @@ public class RoomsImpl implements Rooms {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(build(domainStore.key())); 
+			values.add(build(UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;				
@@ -145,11 +146,11 @@ public class RoomsImpl implements Rooms {
 		if(results.isEmpty())
 			throw new NotFoundException("La chambre n'a pas été trouvée !");
 		
-		return build(results.get(0).key());		
+		return build(UUIDConvert.fromObject(results.get(0).key()));		
 	}
 
 	@Override
-	public Room get(Object id) throws IOException {
+	public Room get(UUID id) throws IOException {
 		Room item = build(id);
 		
 		if(!contains(item))
@@ -159,13 +160,18 @@ public class RoomsImpl implements Rooms {
 	}
 
 	@Override
-	public Room build(Object id) {
+	public Room build(UUID id) {
 		return new RoomImpl(base, id);
 	}
 
 	@Override
-	public boolean contains(Room item) throws IOException {
-		return item.isPresent() && item.category().isEqual(roomCategory);
+	public boolean contains(Room item) {
+		try {
+			return item.isPresent() && item.category().isEqual(roomCategory);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override

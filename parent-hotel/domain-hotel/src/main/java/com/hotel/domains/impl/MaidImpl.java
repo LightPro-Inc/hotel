@@ -21,7 +21,7 @@ public class MaidImpl implements Maid {
 	private final transient MaidMetadata dm;
 	private final transient DomainStore ds;	
 	
-	public MaidImpl(final Base base, final Object id){
+	public MaidImpl(final Base base, final UUID id){
 		this.base = base;
 		this.dm = MaidMetadata.create();
 		this.ds = this.base.domainsStore(this.dm).createDs(id);	
@@ -59,7 +59,7 @@ public class MaidImpl implements Maid {
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
+	public boolean isPresent() {
 		return person.isPresent();
 	}
 
@@ -109,12 +109,12 @@ public class MaidImpl implements Maid {
 	}
 	
 	@Override
-	public boolean isEqual(Person item) throws IOException {
+	public boolean isEqual(Person item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(Person item) throws IOException {
+	public boolean isNotEqual(Person item) {
 		return !isEqual(item);
 	}
 

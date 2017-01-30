@@ -3,9 +3,10 @@ package com.hotel.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Booking;
 import com.hotel.domains.api.BookingMetadata;
 import com.hotel.domains.api.RoomCategory;
@@ -16,14 +17,14 @@ import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainsStore;
 
-public class BookingsOfRoomCategoryImpl implements AdvancedQueryable<Booking> {
+public class BookingsOfRoomCategoryImpl implements AdvancedQueryable<Booking, UUID> {
 
 	private transient final Base base;
 	private final transient BookingMetadata dm;
 	private final transient DomainsStore ds;
 	private final transient RoomCategory roomCategory;
 	
-	public BookingsOfRoomCategoryImpl(Base base, Object roomCategoryId){
+	public BookingsOfRoomCategoryImpl(Base base, UUID roomCategoryId){
 		this.base = base;
 		this.dm = BookingMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);	
@@ -67,7 +68,7 @@ public class BookingsOfRoomCategoryImpl implements AdvancedQueryable<Booking> {
 		}
 		
 		return ds.findDs(statement, params).stream()
-					  					   .map(m -> build(m.key()))
+					  					   .map(m -> build(UUIDConvert.fromObject(m.key())))
 				  					   	   .collect(Collectors.toList());
 	}
 
@@ -92,17 +93,22 @@ public class BookingsOfRoomCategoryImpl implements AdvancedQueryable<Booking> {
 	}
 
 	@Override
-	public Booking build(Object id) {
+	public Booking build(UUID id) {
 		return new BookingImpl(base, id);
 	}
 
 	@Override
-	public boolean contains(Booking item) throws IOException {
-		return ds.exists(item.id());
+	public boolean contains(Booking item) {
+		try {
+			return ds.exists(item.id());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
-	public Booking get(Object id) throws IOException {
+	public Booking get(UUID id) throws IOException {
 		Booking item = build(id);
 		
 		if(!item.isPresent() && item.room().category().isNotEqual(roomCategory))

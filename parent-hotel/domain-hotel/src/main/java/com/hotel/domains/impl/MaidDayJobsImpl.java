@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Maid;
 import com.hotel.domains.api.MaidDayJob;
 import com.hotel.domains.api.MaidDayJobMetadata;
@@ -83,12 +84,12 @@ public class MaidDayJobsImpl implements MaidDayJobs {
 		
 		return ds.find(statement, params)
 				 .stream()
-				 .map(m -> build(m))
+				 .map(m -> build(UUIDConvert.fromObject(m)))
 				 .collect(Collectors.toList());	
 	}
 
 	@Override
-	public MaidDayJob build(Object id) {
+	public MaidDayJob build(UUID id) {
 		return new MaidDayJobImpl(base, id);
 	}
 
@@ -112,7 +113,7 @@ public class MaidDayJobsImpl implements MaidDayJobs {
 	}
 
 	@Override
-	public MaidDayJob get(Object id) throws IOException {
+	public MaidDayJob get(UUID id) throws IOException {
 		MaidDayJob item = build(id);
 		
 		if(!item.isPresent())

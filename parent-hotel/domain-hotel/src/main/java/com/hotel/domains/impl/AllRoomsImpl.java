@@ -3,10 +3,12 @@ package com.hotel.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Room;
 import com.hotel.domains.api.RoomCategoryMetadata;
 import com.hotel.domains.api.RoomMetadata;
@@ -63,7 +65,7 @@ public class AllRoomsImpl implements Rooms {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(build(domainStore.key())); 
+			values.add(build(UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;		
@@ -103,13 +105,13 @@ public class AllRoomsImpl implements Rooms {
 		
 		return ds.getAllByKey(dm.numberKey(), number)
 				 .stream()
-		 		 .map(m -> new RoomImpl(base, m.key()))
+		 		 .map(m -> new RoomImpl(base, UUIDConvert.fromObject(m.key())))
 		 		 .findFirst()
 		 		 .get();		
 	}
 
 	@Override
-	public Room get(Object id) throws IOException {
+	public Room get(UUID id) throws IOException {
 		Room item = build(id);
 		
 		if(!item.isPresent())
@@ -119,13 +121,18 @@ public class AllRoomsImpl implements Rooms {
 	}
 
 	@Override
-	public Room build(Object id) {
+	public Room build(UUID id) {
 		return new RoomImpl(base, id);
 	}
 
 	@Override
-	public boolean contains(Room item) throws IOException {
-		return ds.exists(item.id());
+	public boolean contains(Room item) {
+		try {
+			return ds.exists(item.id());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override

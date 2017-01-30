@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Booking;
 import com.hotel.domains.api.Guest;
 import com.hotel.domains.api.GuestMetadata;
@@ -20,12 +19,12 @@ import com.securities.impl.PersonImpl;
 public class GuestImpl implements Guest {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient GuestMetadata dm;
 	private final transient DomainStore ds;
 	private final transient Person identity;
 	
-	public GuestImpl(final Base base, final Object id){
+	public GuestImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = GuestMetadata.create();
@@ -40,12 +39,17 @@ public class GuestImpl implements Guest {
 
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -69,7 +73,7 @@ public class GuestImpl implements Guest {
 	}
 
 	@Override
-	public Queryable<Booking> bookings() throws IOException {
+	public Queryable<Booking, UUID> bookings() throws IOException {
 		return new BookingsOfGuestImpl(this.base, this.id);
 	}
 
@@ -109,12 +113,12 @@ public class GuestImpl implements Guest {
 	}
 
 	@Override
-	public boolean isEqual(Person item) throws IOException {
+	public boolean isEqual(Person item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(Person item) throws IOException {
+	public boolean isNotEqual(Person item) {
 		return !isEqual(item);
 	}
 

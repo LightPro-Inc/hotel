@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.hotel.domains.api.Guest;
 import com.hotel.domains.api.GuestMetadata;
 import com.hotel.domains.api.Guests;
@@ -74,7 +76,7 @@ public class GuestsImpl implements Guests {
 		
 		
 		return ds.findDs(statement, params).stream()
-										   .map(m -> build(m.key()))
+										   .map(m -> build(UUIDConvert.fromObject(m.key())))
 										   .collect(Collectors.toList());		
 	}
 
@@ -93,13 +95,18 @@ public class GuestsImpl implements Guests {
 	}
 
 	@Override
-	public Guest build(Object id) {
+	public Guest build(UUID id) {
 		return new GuestImpl(base, id);
 	}
 
 	@Override
-	public boolean contains(Guest item) throws IOException {
-		return ds.exists(item.id());
+	public boolean contains(Guest item) {
+		try {
+			return ds.exists(item.id());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -113,7 +120,7 @@ public class GuestsImpl implements Guests {
 	}
 
 	@Override
-	public Guest get(Object id) throws IOException {
+	public Guest get(UUID id) throws IOException {
 		Guest item = build(id);
 		
 		if(!item.isPresent())
