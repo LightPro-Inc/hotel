@@ -118,12 +118,7 @@ public class BookingsOfGuestImpl implements AdvancedQueryable<Booking, UUID> {
 
 	@Override
 	public boolean contains(Booking item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override

@@ -101,12 +101,7 @@ public class GuestsImpl implements Guests {
 
 	@Override
 	public boolean contains(Guest item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override

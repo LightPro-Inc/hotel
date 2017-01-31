@@ -67,12 +67,7 @@ public class MaidsImpl implements Maids {
 
 	@Override
 	public boolean contains(Maid item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override

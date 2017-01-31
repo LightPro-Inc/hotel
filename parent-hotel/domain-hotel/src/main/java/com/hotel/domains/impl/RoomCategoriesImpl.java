@@ -129,11 +129,6 @@ public class RoomCategoriesImpl implements RoomCategories {
 
 	@Override
 	public boolean contains(RoomCategory item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 }

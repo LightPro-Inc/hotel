@@ -127,12 +127,7 @@ public class AllRoomsImpl implements Rooms {
 
 	@Override
 	public boolean contains(Room item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override
