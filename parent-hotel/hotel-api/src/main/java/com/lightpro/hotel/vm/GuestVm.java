@@ -1,7 +1,7 @@
 package com.lightpro.hotel.vm;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -49,7 +49,7 @@ public class GuestVm {
 	}
 	
 	@JsonGetter
-	public Date getBirthDate() throws IOException {
+	public LocalDate getBirthDate() throws IOException {
 		return origin.birthDate();
 	}
 	

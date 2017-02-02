@@ -1,7 +1,7 @@
 package com.hotel.domains.api;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,5 +11,5 @@ import com.securities.api.Sex;
 
 public interface Maids extends AdvancedQueryable<Maid, UUID>, Updatable<Maid> {
 	List<Maid> actives() throws IOException;
-	Maid add(String firstName, String lastName, Sex sex, String address, Date birthDate, String tel1, String tel2, String email, String photo) throws IOException;
+	Maid add(String firstName, String lastName, Sex sex, String address, LocalDate birthDate, String tel1, String tel2, String email, String photo) throws IOException;
 }

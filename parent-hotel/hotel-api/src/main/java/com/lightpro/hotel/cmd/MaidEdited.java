@@ -1,7 +1,10 @@
 package com.lightpro.hotel.cmd;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
+import com.common.utilities.convert.TimeConvert;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.securities.api.Sex;
@@ -12,7 +15,7 @@ public class MaidEdited {
 	private final String lastName;
 	private final Sex sex;
 	private final String address;
-	private final Date birthDate;
+	private final LocalDate birthDate;
 	private final String tel1;
 	private final String tel2;
 	private final String email;
@@ -37,7 +40,7 @@ public class MaidEdited {
 		this.lastName = lastName;
 		this.sex = sex;
 		this.address = address;
-		this.birthDate = birthDate;
+		this.birthDate = TimeConvert.toLocalDate(birthDate, ZoneId.systemDefault());
 		this.tel1 = tel1;
 		this.tel2 = tel2;
 		this.email = email;
@@ -60,7 +63,7 @@ public class MaidEdited {
 		return address;
 	}
 	
-	public Date birthDate(){
+	public LocalDate birthDate(){
 		return birthDate;
 	}
 	

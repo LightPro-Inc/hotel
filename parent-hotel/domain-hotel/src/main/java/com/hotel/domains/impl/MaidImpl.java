@@ -1,7 +1,7 @@
 package com.hotel.domains.impl;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.hotel.domains.api.Maid;
@@ -69,7 +69,7 @@ public class MaidImpl implements Maid {
 	}
 
 	@Override
-	public Date birthDate() throws IOException {
+	public LocalDate birthDate() throws IOException {
 		return person.birthDate();
 	}
 
@@ -94,7 +94,7 @@ public class MaidImpl implements Maid {
 	}
 
 	@Override
-	public void update(String firstName, String lastName, Sex sex, String address, Date birthDate, String tel1, String tel2, String email, String photo) throws IOException {
+	public void update(String firstName, String lastName, Sex sex, String address, LocalDate birthDate, String tel1, String tel2, String email, String photo) throws IOException {
 		this.person.update(firstName, lastName, sex, address, birthDate, tel1, tel2, email, photo);	
 	}
 

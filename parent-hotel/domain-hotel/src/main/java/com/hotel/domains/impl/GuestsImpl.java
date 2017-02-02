@@ -1,8 +1,8 @@
 package com.hotel.domains.impl;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +37,7 @@ public class GuestsImpl implements Guests {
 	}
 	
 	@Override
-	public Guest add(String firstName, String lastName, Sex sex, String address, Date birthDate, String tel1, String tel2, String email, String photo) throws IOException {
+	public Guest add(String firstName, String lastName, Sex sex, String address, LocalDate birthDate, String tel1, String tel2, String email, String photo) throws IOException {
 		
 		Person person = persons.add(firstName, lastName, sex, address, birthDate, tel1, tel2, email, photo);		
 		ds.set(person.id(), new HashMap<String, Object>());
