@@ -12,6 +12,7 @@ public interface RoomCategory extends Recordable<UUID, RoomCategory> {
 	double nightPrice() throws IOException;	
 	void update(String name, int capacity, double nightPrice) throws IOException;
 	Rooms rooms() throws IOException;
+	Hotel module() throws IOException;
 	
 	Queryable<Booking, UUID> bookings() throws IOException;
 }

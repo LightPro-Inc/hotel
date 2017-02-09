@@ -25,11 +25,13 @@ import com.lightpro.hotel.cmd.GuestEdit;
 import com.lightpro.hotel.vm.BookingVm;
 import com.lightpro.hotel.vm.GuestVm;
 import com.securities.api.Person;
+import com.securities.api.Secured;
 
 @Path("/guest")
 public class GuestRs extends HotelBaseRs {
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getGuest(@PathParam("id") UUID id) throws IOException {
@@ -50,6 +52,7 @@ public class GuestRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getBookings(@QueryParam("page") int page, 
@@ -75,6 +78,7 @@ public class GuestRs extends HotelBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response editGuest(@PathParam("id") UUID id, GuestEdit data) throws IOException {
@@ -106,6 +110,7 @@ public class GuestRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/bookings")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getGuestBookings(@PathParam("id") UUID id) throws IOException {			

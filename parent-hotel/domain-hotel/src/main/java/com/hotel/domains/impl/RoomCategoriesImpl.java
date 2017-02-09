@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.common.utilities.convert.UUIDConvert;
+import com.hotel.domains.api.Hotel;
 import com.hotel.domains.api.RoomCategories;
 import com.hotel.domains.api.RoomCategory;
 import com.hotel.domains.api.RoomCategoryMetadata;
@@ -24,11 +25,13 @@ public class RoomCategoriesImpl implements RoomCategories {
 	private transient final Base base;
 	private final transient RoomCategoryMetadata dm;
 	private final transient DomainsStore ds;
+	private final transient Hotel module;
 	
-	public RoomCategoriesImpl(final Base base){
+	public RoomCategoriesImpl(final Base base, final Hotel module){
 		this.base = base;
 		this.dm = RoomCategoryMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);	
+		this.module = module;
 	}
 	
 	@Override
@@ -46,6 +49,7 @@ public class RoomCategoriesImpl implements RoomCategories {
 		params.put(dm.nameKey(), name);	
 		params.put(dm.capacityKey(), capacity);
 		params.put(dm.nightPriceKey(), nightPrice);
+		params.put(dm.moduleIdKey(), module.id());
 		
 		UUID id = UUID.randomUUID();
 		ds.set(id, params);
@@ -67,13 +71,14 @@ public class RoomCategoriesImpl implements RoomCategories {
 	public int totalCount(String filter) throws IOException {
 		
 		String statement = String.format("SELECT COUNT(%s) FROM %s " +
-										 "WHERE %s ILIKE ? ",
+										 "WHERE %s ILIKE ? AND %s=?",
 										 dm.keyName(), dm.domainName(), 
-										 dm.nameKey());
+										 dm.nameKey(), dm.moduleIdKey());
 
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());			
@@ -83,7 +88,7 @@ public class RoomCategoriesImpl implements RoomCategories {
 	public RoomCategory get(UUID id)  throws IOException {
 		RoomCategory item = build(id);
 		
-		if(!item.isPresent())
+		if(!contains(item))
 			throw new IllegalArgumentException("La catégorie de chambre n'a pas été trouvée !");
 		
 		return item;
@@ -94,15 +99,16 @@ public class RoomCategoriesImpl implements RoomCategories {
 		
 		HorodateMetadata hm = HorodateImpl.dm();		
 		String statement = String.format("SELECT %s FROM %s " +
-			   							 "WHERE %s ILIKE ? "
+			   							 "WHERE %s ILIKE ? AND %s=? "
 			   							 + "ORDER BY %s DESC LIMIT ? OFFSET ?", 
 			   							 dm.keyName(), dm.domainName(), 
-			   							 dm.nameKey(),
+			   							 dm.nameKey(), dm.moduleIdKey(),
 			   							 hm.dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -119,7 +125,8 @@ public class RoomCategoriesImpl implements RoomCategories {
 
 	@Override
 	public void delete(RoomCategory item) throws IOException {
-		ds.delete(item.id());
+		if(contains(item))
+			ds.delete(item.id());
 	}
 
 	@Override
@@ -129,6 +136,11 @@ public class RoomCategoriesImpl implements RoomCategories {
 
 	@Override
 	public boolean contains(RoomCategory item) {
-		return ds.exists(item.id());
+		try {
+			return ds.exists(item.id()) && item.module().isEqual(module);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

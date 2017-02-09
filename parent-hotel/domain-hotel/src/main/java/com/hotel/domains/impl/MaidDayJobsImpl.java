@@ -19,19 +19,25 @@ import com.hotel.domains.api.MaidDayJob;
 import com.hotel.domains.api.MaidDayJobMetadata;
 import com.hotel.domains.api.MaidDayJobStatus;
 import com.hotel.domains.api.MaidDayJobs;
+import com.hotel.domains.api.MaidMetadata;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainsStore;
+import com.securities.api.Company;
+import com.securities.api.PersonMetadata;
+import com.securities.impl.PersonImpl;
 
 public class MaidDayJobsImpl implements MaidDayJobs {
 
 	private transient final Base base;
 	private final transient MaidDayJobMetadata dm;
 	private final transient DomainsStore ds;
+	private final transient Company company;
 	
-	public MaidDayJobsImpl(final Base base){
+	public MaidDayJobsImpl(final Base base, final Company company){
 		this.base = base;
 		this.dm = MaidDayJobMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);	
+		this.company = company;
 	}
 	
 	@Override
@@ -41,7 +47,7 @@ public class MaidDayJobsImpl implements MaidDayJobs {
             throw new IllegalArgumentException("Date invalide : vous devez saisir une valeur !");
         }
 		
-		if (maid == null || !maid.isPresent()) {
+		if (!maid.isPresent()) {
             throw new IllegalArgumentException("Employé invalide : vous devez en choisir un !");
         }
     	
@@ -71,16 +77,23 @@ public class MaidDayJobsImpl implements MaidDayJobs {
 	@Override
 	public List<MaidDayJob> between(LocalDate start, LocalDate end) throws IOException {
 
-		String statement = String.format( "SELECT %s FROM %s "
-										+ "WHERE %s >= ? AND %s <= ? "
-										+ "ORDER BY %s ASC", 
+		MaidMetadata dmMd = MaidMetadata.create();
+		PersonMetadata dmPers = PersonImpl.dm();
+		String statement = String.format( "SELECT mdj.%s FROM %s mdj "
+										+ "JOIN %s md ON md.%s=mdj.%s "
+										+ "left JOIN %s pers ON pers.%s=md.%s "
+										+ "WHERE (mdj.%s >= ? AND mdj.%s <= ?) AND pers.%s=? "
+										+ "ORDER BY mdj.%s ASC", 
 										dm.keyName(), dm.domainName(), 
-										dm.dayKey(), dm.dayKey(), 
+										dmMd.domainName(), dmMd.keyName(), dm.maidIdKey(),
+										dmPers.domainName(), dmPers.keyName(), dmMd.keyName(),
+										dm.dayKey(), dm.dayKey(), dmPers.companyIdKey(),
 										dm.dayKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		params.add(java.sql.Date.valueOf(start));
 		params.add(java.sql.Date.valueOf(end));
+		params.add(company.id());
 		
 		return ds.find(statement, params)
 				 .stream()
@@ -99,7 +112,7 @@ public class MaidDayJobsImpl implements MaidDayJobs {
 		Optional<MaidDayJob> result = between(date, date).stream().
 									 filter(m -> {
 										try {
-											return m.maid().id().equals(maid.id());
+											return m.maid().isEqual(maid);
 										} catch (IOException e) {
 											e.printStackTrace();
 										}

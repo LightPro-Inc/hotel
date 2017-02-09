@@ -40,12 +40,14 @@ import com.lightpro.hotel.vm.LocationStat;
 import com.lightpro.hotel.vm.RateOccupation;
 import com.lightpro.hotel.vm.ResumeLocationStat;
 import com.securities.api.Person;
+import com.securities.api.Secured;
 import com.infrastructure.core.PaginationSet;
 
 @Path("/booking")
 public class BookingRs extends HotelBaseRs {
 			
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getBooking(@PathParam("id") UUID id) throws IOException {
@@ -68,6 +70,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/resumeStat")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getResumeStat() throws IOException {
@@ -98,6 +101,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getBookings(@QueryParam("page") int page, 
@@ -124,6 +128,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/guest")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getBookingGuest(@PathParam("id") UUID id) throws IOException {			
@@ -144,6 +149,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/day-occupation")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getDayOccupations() throws IOException {
@@ -165,6 +171,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/day-occupation/client-en-recouche")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getDayOccupationsClientEnRechouche() throws IOException {
@@ -194,6 +201,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/day-occupation/client-attendu")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getDayOccupationsClientAttendus() throws IOException {
@@ -223,6 +231,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/day-occupation/client-arrive")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getDayOccupationsClientArrives() throws IOException {
@@ -252,6 +261,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getBookings(BookingPeriod  period) throws IOException {
 		
@@ -271,6 +281,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/guest")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response identifyGuest(@PathParam("id") UUID id, GuestEdit data) throws IOException {
@@ -307,6 +318,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/move")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response move(@PathParam("id") UUID id, BookingMoved bm) throws IOException {
@@ -325,6 +337,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/resize")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response resize(@PathParam("id") UUID id, BookingResized br) throws IOException {
@@ -343,6 +356,7 @@ public class BookingRs extends HotelBaseRs {
 	}	
 	
 	@POST
+	@Secured
 	@Path("/{id}/confirm")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response confirm(@PathParam("id") UUID id) {
@@ -361,6 +375,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/cancel")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response cancel(@PathParam("id") UUID id) {
@@ -378,6 +393,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/checkIn")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response checkIn(@PathParam("id") UUID id) {
@@ -395,6 +411,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/checkOut")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response checkOut(@PathParam("id") UUID id) {
@@ -412,6 +429,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/rate-occupation/month")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getMonthRateOccupation(final LocalDateTime date) {
@@ -429,6 +447,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/rate-occupation/week-work-day")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRateWeekWorkDayOccupation(final LocalDateTime date) {
@@ -446,6 +465,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/rate-occupation/weekend")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRateWeekendOccupation(final LocalDateTime date) {
@@ -463,6 +483,7 @@ public class BookingRs extends HotelBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response editBook(@PathParam("id") UUID id, BookingEdit data) throws IOException {
@@ -488,6 +509,7 @@ public class BookingRs extends HotelBaseRs {
 						}
 						
 						Booking booking = hotel().bookings().get(id);
+						booking.identifyGuest(guest.id());						
 						booking.pieceInfos(data.naturePiece(), data.numeroPiece(), data.deliveredDatePiece(), data.editionPlacePiece(), data.editedByPiece());
 						booking.otherInfos(data.numberOfChildren(), data.numberOfAdults(), data.exactDestination());
 

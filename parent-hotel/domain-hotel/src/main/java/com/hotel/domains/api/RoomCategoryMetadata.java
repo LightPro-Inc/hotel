@@ -39,6 +39,10 @@ public class RoomCategoryMetadata implements DomainMetadata {
 		return "nightprice";
 	}
 	
+	public String moduleIdKey() {
+		return "moduleid";
+	}
+	
 	public static RoomCategoryMetadata create(){
 		return new RoomCategoryMetadata();
 	}

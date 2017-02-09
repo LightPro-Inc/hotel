@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hotel.domains.api.Booking;
+import com.hotel.domains.api.Hotel;
 import com.hotel.domains.api.RoomCategory;
 import com.hotel.domains.api.RoomCategoryMetadata;
 import com.hotel.domains.api.Rooms;
@@ -98,6 +99,12 @@ public class RoomCategoryImpl implements RoomCategory {
 	@Override
 	public boolean isNotEqual(RoomCategory item) {
 		return !isEqual(item);
+	}
+
+	@Override
+	public Hotel module() throws IOException {
+		UUID moduleId = ds.get(dm.moduleIdKey());
+		return new HotelImpl(base, moduleId);
 	}
 
 }

@@ -21,6 +21,8 @@ import com.hotel.domains.api.BookingStatus;
 import com.hotel.domains.api.Bookings;
 import com.hotel.domains.api.GuestMetadata;
 import com.hotel.domains.api.Guests;
+import com.hotel.domains.api.Hotel;
+import com.hotel.domains.api.RoomCategoryMetadata;
 import com.hotel.domains.api.RoomMetadata;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
@@ -35,11 +37,13 @@ public class BookingsImpl implements Bookings {
 	private transient final Base base;
 	private final transient BookingMetadata dm;
 	private final transient DomainsStore ds;
+	private final transient Hotel module;
 	
-	public BookingsImpl(final Base base){
+	public BookingsImpl(final Base base, final Hotel module){
 		this.base = base;
 		this.dm = BookingMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);	
+		this.module = module;
 	}
 	
 	@Override
@@ -77,11 +81,24 @@ public class BookingsImpl implements Bookings {
 	public List<Booking> between(LocalDate start, LocalDate end) throws IOException {
 		List<Booking> values = new ArrayList<Booking>();
 		
-		String statement = String.format("SELECT %s FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s", dm.keyName(), dm.domainName(), dm.startDateKey(), dm.endDateKey(), dm.startDateKey());
+		RoomCategoryMetadata caDm = RoomCategoryMetadata.create();
+		RoomMetadata roDm = RoomMetadata.create();
+		
+		String statement = String.format("SELECT bk.%s FROM %s bk "
+				+ "JOIN %s ro ON ro.%s=bk.%s "
+				+ "left JOIN %s ca ON ca.%s=ro.%s "
+				+ "WHERE (bk.%s::date >= ? AND bk.%s::date <= ?) AND ca.%s=? "
+				+ "ORDER BY bk.%s", 
+				dm.keyName(), dm.domainName(), 
+				roDm.domainName(), roDm.keyName(), dm.roomIdKey(),
+				caDm.domainName(), caDm.keyName(), roDm.roomcategoryIdKey(),
+				dm.startDateKey(), dm.endDateKey(), caDm.moduleIdKey(),
+				dm.startDateKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		params.add(java.sql.Date.valueOf(start));
 		params.add(java.sql.Date.valueOf(end));
+		params.add(module.id());
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
@@ -95,7 +112,7 @@ public class BookingsImpl implements Bookings {
 	public Booking get(UUID id) throws IOException {
 		Booking item = build(id);
 		
-		if(!item.isPresent())
+		if(!contains(item))
 			throw new IllegalArgumentException("La réservation n'a pas été trouvée !");
 		
 		return item;
@@ -103,7 +120,7 @@ public class BookingsImpl implements Bookings {
 
 	@Override
 	public Guests guests() throws IOException {
-		return new GuestsImpl(this.base);
+		return new GuestsImpl(this.base, module.company());
 	}
 
 	@Override
@@ -121,25 +138,30 @@ public class BookingsImpl implements Bookings {
 		
 		HorodateMetadata hm = HorodateImpl.dm();
 		RoomMetadata rmDm = RoomMetadata.create();
+		RoomCategoryMetadata caDm = RoomCategoryMetadata.create();
 		GuestMetadata gtDm = GuestMetadata.create();
 		PersonMetadata persDm = PersonImpl.dm();
 		
 		String statement = String.format("SELECT bk.%s FROM %s bk " +
 				   						 "JOIN %s rm ON rm.%s = bk.%s " + 
+				   						 "left JOIN %s ca ON ca.%s = rm.%s " +
 			   							 "JOIN %s gt ON gt.%s = bk.%s " +
-			   							 "JOIN %s pers ON pers.%s = gt.%s " +
-			   							 "WHERE rm.%s ILIKE ? OR concat(pers.%s, ' ', pers.%s) ILIKE ? ORDER BY bk.%s DESC LIMIT ? OFFSET ?", 
+			   							 "left JOIN %s pers ON pers.%s = gt.%s " +
+			   							 "WHERE (rm.%s ILIKE ? OR concat(pers.%s, ' ', pers.%s) ILIKE ?) AND ca.%s=? "
+			   							 + "ORDER BY bk.%s DESC LIMIT ? OFFSET ?", 
 			   							 dm.keyName(), dm.domainName(), 
 			   							 rmDm.domainName(), rmDm.keyName(), dm.roomIdKey(),
+			   							 caDm.domainName(), caDm.keyName(), rmDm.roomcategoryIdKey(),
 			   							 gtDm.domainName(), gtDm.keyName(), dm.guestIdKey(),
 			   							 persDm.domainName(), persDm.keyName(), gtDm.keyName(),
-			   							 rmDm.numberKey(), persDm.lastNameKey(), persDm.firstNameKey(), 
+			   							 rmDm.numberKey(), persDm.lastNameKey(), persDm.firstNameKey(), caDm.moduleIdKey(),
 			   							 hm.dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -158,24 +180,28 @@ public class BookingsImpl implements Bookings {
 	public int totalCount(String filter) throws IOException {
 		
 		RoomMetadata rmDm = RoomMetadata.create();
+		RoomCategoryMetadata caDm = RoomCategoryMetadata.create();
 		GuestMetadata gtDm = GuestMetadata.create();
 		PersonMetadata persDm = PersonImpl.dm();
 		
 		String statement = String.format("SELECT COUNT(bk.%s) FROM %s bk " +
-										 "JOIN %s rm ON rm.%s = bk.%s " + 
-										 "JOIN %s gt ON gt.%s = bk.%s " +
-										 "JOIN %s pers ON pers.%s = gt.%s " +
-										 "WHERE rm.%s ILIKE ? OR concat(pers.%s, ' ', pers.%s) ILIKE ?", 
-										 dm.keyName(), dm.domainName(), 
-										 rmDm.domainName(), rmDm.keyName(), dm.roomIdKey(),
-										 gtDm.domainName(), gtDm.keyName(), dm.guestIdKey(),
-										 persDm.domainName(), persDm.keyName(), gtDm.keyName(),
-										 rmDm.numberKey(), persDm.lastNameKey(), persDm.firstNameKey());
+				   						 "JOIN %s rm ON rm.%s = bk.%s " + 
+				   						 "left JOIN %s ca ON ca.%s = rm.%s " +
+			   							 "JOIN %s gt ON gt.%s = bk.%s " +
+			   							 "left JOIN %s pers ON pers.%s = gt.%s " +
+			   							 "WHERE (rm.%s ILIKE ? OR concat(pers.%s, ' ', pers.%s) ILIKE ?) AND ca.%s=? ",
+			   							 dm.keyName(), dm.domainName(), 
+			   							 rmDm.domainName(), rmDm.keyName(), dm.roomIdKey(),
+			   							 caDm.domainName(), caDm.keyName(), rmDm.roomcategoryIdKey(),
+			   							 gtDm.domainName(), gtDm.keyName(), dm.guestIdKey(),
+			   							 persDm.domainName(), persDm.keyName(), gtDm.keyName(),
+			   							 rmDm.numberKey(), persDm.lastNameKey(), persDm.firstNameKey(), caDm.moduleIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());	
@@ -188,29 +214,47 @@ public class BookingsImpl implements Bookings {
 
 	@Override
 	public boolean contains(Booking item) {
-		return ds.exists(item.id());
+		try {
+			return ds.exists(item.id()) && item.room().category().module().isEqual(module);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
 	public List<Booking> at(LocalDate date) throws IOException {
 		
-		RoomMetadata rmDm = RoomMetadata.create();
-		String statement = String.format( "SELECT bk.%s FROM %s bk "
-										+ "JOIN %s rm ON rm.%s = bk.%s "
-										+ "WHERE bk.%s::date <= ? AND bk.%s::date >= ? "
-										+ "ORDER BY rm.%s ASC", 
-										dm.keyName(), dm.domainName(), 
-										rmDm.domainName(), rmDm.keyName(), dm.roomIdKey(),
-										dm.startDateKey(), dm.endDateKey(), 
-										rmDm.numberKey());
+		RoomCategoryMetadata caDm = RoomCategoryMetadata.create();
+		RoomMetadata roDm = RoomMetadata.create();
+		
+		String statement = String.format("SELECT bk.%s FROM %s bk "
+				+ "JOIN %s ro ON ro.%s=bk.%s "
+				+ "left JOIN %s ca ON ca.%s=ro.%s "
+				+ "WHERE (bk.%s::date <= ? AND bk.%s::date >= ?) AND ca.%s=? "
+				+ "ORDER BY bk.%s", 
+				dm.keyName(), dm.domainName(), 
+				roDm.domainName(), roDm.keyName(), dm.roomIdKey(),
+				caDm.domainName(), caDm.keyName(), roDm.roomcategoryIdKey(),
+				dm.startDateKey(), dm.endDateKey(), caDm.moduleIdKey(),
+				dm.startDateKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		params.add(java.sql.Date.valueOf(date));
 		params.add(java.sql.Date.valueOf(date));
+		params.add(module.id());		
 		
-		return ds.find(statement, params)
+		return ds.find(statement, params)				 
 				 .stream()
 				 .map(m -> build(UUIDConvert.fromObject(m)))
+				 .sorted((e1, e2) -> {
+					try {
+						return e1.room().number().compareTo(e2.room().number());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return 0;
+				})
 				 .collect(Collectors.toList());
 	}
 
@@ -246,7 +290,7 @@ public class BookingsImpl implements Bookings {
 			numberOfOccupations += at(start.plusDays(i)).size();
 		}
 		
-		double numberOfRooms = new AllRoomsImpl(base).all().size();
+		double numberOfRooms = module.allRooms().all().size();
 		
 		return (numberOfOccupations / (numberOfRooms * numberOfDays));
 	}

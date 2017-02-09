@@ -18,6 +18,7 @@ import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainStore;
 import com.infrastructure.datasource.DomainsStore;
+import com.securities.api.Company;
 import com.securities.api.Person;
 import com.securities.api.PersonMetadata;
 import com.securities.api.Persons;
@@ -31,22 +32,19 @@ public class MaidsImpl implements Maids {
 	private final transient MaidMetadata dm;
 	private final transient DomainsStore ds;
 	private final transient Persons persons;
+	private final transient Company company;
 	
-	public MaidsImpl(final Base base){
+	public MaidsImpl(final Base base, final Company company){
 		this.base = base;		
 		this.dm = MaidMetadata.create();
 		this.ds = base.domainsStore(dm);
-		persons = new PersonsImpl(base);
+		this.company = company;
+		persons = new PersonsImpl(base, company);
 	}
 	
 	@Override
 	public List<Maid> all() throws IOException {
-		List<Maid> values = new ArrayList<Maid>();
-		
-		List<DomainStore> results = ds.getAll();
-		for (DomainStore domainStore : results) {
-			values.add(build(UUIDConvert.fromObject(domainStore.key()))); 
-		}		
+		List<Maid> values = find(0, 0, "");
 		
 		return values.stream()
 				     .sorted((e1, e2) -> {
@@ -67,7 +65,7 @@ public class MaidsImpl implements Maids {
 
 	@Override
 	public boolean contains(Maid item) {
-		return ds.exists(item.id());
+		return item.isPresent() && persons.contains(item);
 	}
 
 	@Override
@@ -80,12 +78,20 @@ public class MaidsImpl implements Maids {
 		List<Maid> values = new ArrayList<Maid>();
 		
 		PersonMetadata personDm = PersonImpl.dm();
-		String statement = String.format("SELECT %s FROM %s WHERE %s IN (SELECT %s FROM %s WHERE concat(%s,' ', %s) ILIKE ?  OR concat(%s, ' ', %s) ILIKE ?) ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.keyName(), personDm.keyName(), personDm.domainName(), personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey(), HorodateImpl.dm().dateCreatedKey());
+		String statement = String.format("SELECT md.%s FROM %s md "
+				+ "JOIN %s pers ON pers.%s=md.%s "
+				+ "WHERE (concat(pers.%s,' ', pers.%s) ILIKE ?  OR concat(pers.%s, ' ', pers.%s) ILIKE ?) AND pers.%s=? "
+				+ "ORDER BY md.%s DESC LIMIT ? OFFSET ?", 
+				dm.keyName(), dm.domainName(), 
+				personDm.domainName(), personDm.keyName(), dm.keyName(),
+				personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey(), personDm.companyIdKey(),
+				HorodateImpl.dm().dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(company.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -106,12 +112,18 @@ public class MaidsImpl implements Maids {
 	@Override
 	public int totalCount(String filter) throws IOException {
 		PersonMetadata personDm = PersonImpl.dm();
-		String statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s IN (SELECT %s FROM %s WHERE concat(%s,' ', %s) ILIKE ?  OR concat(%s, ' ', %s) ILIKE ?)", dm.keyName(), dm.domainName(), dm.keyName(), personDm.keyName(), personDm.domainName(), personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey());
+		String statement = String.format("SELECT COUNT(md.%s) FROM %s md "
+				+ "JOIN %s pers ON pers.%s=md.%s "
+				+ "WHERE (concat(pers.%s,' ', pers.%s) ILIKE ?  OR concat(pers.%s, ' ', pers.%s) ILIKE ?) AND pers.%s=? ",
+				dm.keyName(), dm.domainName(), 
+				personDm.domainName(), personDm.keyName(), dm.keyName(),
+				personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey(), personDm.companyIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(company.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());	
@@ -127,15 +139,17 @@ public class MaidsImpl implements Maids {
 
 	@Override
 	public void delete(Maid item) throws IOException {
-		ds.delete(item.id());
-		persons.delete(item);
+		if(contains(item)){
+			ds.delete(item.id());
+			persons.delete(item);
+		}
 	}
 
 	@Override
 	public Maid get(UUID id) throws IOException {
 		Maid item = build(id);
 		
-		if(!item.isPresent())
+		if(!contains(item))
 			throw new NotFoundException("Le client n'a pas été trouvé !");
 		
 		return item;

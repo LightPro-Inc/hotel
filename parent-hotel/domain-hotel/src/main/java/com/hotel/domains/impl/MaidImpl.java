@@ -10,6 +10,7 @@ import com.infrastructure.core.Horodate;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainStore;
+import com.securities.api.Company;
 import com.securities.api.Person;
 import com.securities.api.Sex;
 import com.securities.impl.PersonImpl;
@@ -116,6 +117,11 @@ public class MaidImpl implements Maid {
 	@Override
 	public boolean isNotEqual(Person item) {
 		return !isEqual(item);
+	}
+
+	@Override
+	public Company company() throws IOException {
+		return this.person.company();
 	}
 
 }

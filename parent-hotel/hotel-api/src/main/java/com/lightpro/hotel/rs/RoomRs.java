@@ -27,11 +27,13 @@ import com.lightpro.hotel.cmd.RoomEdit;
 import com.lightpro.hotel.vm.BookingVm;
 import com.lightpro.hotel.vm.RoomFloorVm;
 import com.lightpro.hotel.vm.RoomVm;
+import com.securities.api.Secured;
 
 @Path("/room")
 public class RoomRs extends HotelBaseRs {
 	
 	@GET
+	@Secured
 	@Path("/floor")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoomFloors() throws IOException {
@@ -52,6 +54,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRooms() throws IOException {
 		
@@ -72,6 +75,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/available")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoomsAvailables() throws IOException {
@@ -93,6 +97,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/free")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getFreeRooms() throws IOException {
@@ -122,6 +127,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/occupied")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoomsOccupieds() throws IOException {
@@ -150,6 +156,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/dirty")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoomsDirties() throws IOException {
@@ -178,6 +185,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRooms(   @QueryParam("page") int page, 
@@ -205,6 +213,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{number}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoom(@PathParam("number") String number) throws IOException {
@@ -226,6 +235,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response editRoom(@PathParam("id") UUID id, RoomEdit data) throws IOException {
@@ -244,6 +254,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response deleteRoom(@PathParam("id") UUID number) throws IOException {
@@ -262,6 +273,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/book")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response bookRoom(@PathParam("id") UUID id, BookingEdit data) throws IOException {
@@ -281,6 +293,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/mark-cleanup")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response markCleanup(@PathParam("id") UUID id) throws IOException {
@@ -299,6 +312,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/mark-dirty")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response markDirty(@PathParam("id") UUID id) throws IOException {
@@ -317,6 +331,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/mark-out-of-service")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response markOutOfService(@PathParam("id") UUID id) throws IOException {
@@ -335,6 +350,7 @@ public class RoomRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/mark-in-service")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response markInService(@PathParam("id") UUID id) throws IOException {

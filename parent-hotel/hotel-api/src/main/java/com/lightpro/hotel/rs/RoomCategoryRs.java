@@ -26,11 +26,13 @@ import com.lightpro.hotel.cmd.RoomCategoryEdit;
 import com.lightpro.hotel.cmd.RoomEdit;
 import com.lightpro.hotel.vm.RoomCategoryVm;
 import com.lightpro.hotel.vm.RoomVm;
+import com.securities.api.Secured;
 
 @Path("/roomCategory")
 public class RoomCategoryRs extends HotelBaseRs {
 	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoomCategories() throws IOException {
 		
@@ -52,6 +54,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoomCategories(  @QueryParam("page") int page, 
@@ -78,6 +81,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRoomCategory(@PathParam("id") UUID id) throws IOException {
@@ -96,6 +100,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response createRoomCategory(RoomCategoryEdit data) throws IOException {
 		
@@ -115,6 +120,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response editRoomCategory(@PathParam("id") UUID id, RoomCategoryEdit data) throws IOException {
@@ -134,6 +140,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response deleteRoomCategory(@PathParam("id") UUID id) throws IOException {
@@ -153,6 +160,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/room")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response createRoom(@PathParam("id") UUID id, RoomEdit data) throws IOException {
@@ -173,6 +181,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/room")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRooms(@PathParam("id") UUID id) throws IOException {
@@ -196,6 +205,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/room/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getRooms(@PathParam("id") UUID id,

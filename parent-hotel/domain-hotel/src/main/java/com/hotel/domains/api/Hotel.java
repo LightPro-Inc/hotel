@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.util.List;
 
 import com.securities.api.Company;
+import com.securities.api.Module;
 
-public interface Hotel {
+public interface Hotel extends Module {
 	Company company() throws IOException;		
 	RoomCategories roomCategories() throws IOException;
 	Rooms allRooms() throws IOException;	

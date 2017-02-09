@@ -15,6 +15,7 @@ import com.hotel.domains.api.Guests;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainsStore;
+import com.securities.api.Company;
 import com.securities.api.Person;
 import com.securities.api.PersonMetadata;
 import com.securities.api.Persons;
@@ -28,12 +29,14 @@ public class GuestsImpl implements Guests {
 	private final transient GuestMetadata dm;
 	private final transient DomainsStore ds;
 	private final transient Persons persons;
+	private final transient Company company;
 	
-	public GuestsImpl(final Base base){
+	public GuestsImpl(final Base base, final Company company){
 		this.base = base;
 		this.dm = GuestMetadata.create();
 		this.ds = this.base.domainsStore(this.dm);	
-		persons = new PersonsImpl(base);
+		this.company = company;
+		persons = new PersonsImpl(base, company);
 	}
 	
 	@Override
@@ -57,14 +60,22 @@ public class GuestsImpl implements Guests {
 
 	@Override
 	public List<Guest> find(int page, int pageSize, String filter) throws IOException {
-		
+
 		PersonMetadata personDm = PersonImpl.dm();
-		String statement = String.format("SELECT %s FROM %s WHERE %s IN (SELECT %s FROM %s WHERE concat(%s,' ', %s) ILIKE ?  OR concat(%s, ' ', %s) ILIKE ?) ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.keyName(), personDm.keyName(), personDm.domainName(), personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey(), HorodateImpl.dm().dateCreatedKey());
+		String statement = String.format("SELECT md.%s FROM %s md "
+				+ "JOIN %s pers ON pers.%s=md.%s "
+				+ "WHERE (concat(pers.%s,' ', pers.%s) ILIKE ?  OR concat(pers.%s, ' ', pers.%s) ILIKE ?) AND pers.%s=? "
+				+ "ORDER BY md.%s DESC LIMIT ? OFFSET ?", 
+				dm.keyName(), dm.domainName(), 
+				personDm.domainName(), personDm.keyName(), dm.keyName(),
+				personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey(), personDm.companyIdKey(),
+				HorodateImpl.dm().dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(company.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -74,7 +85,6 @@ public class GuestsImpl implements Guests {
 			params.add(0);
 		}
 		
-		
 		return ds.findDs(statement, params).stream()
 										   .map(m -> build(UUIDConvert.fromObject(m.key())))
 										   .collect(Collectors.toList());		
@@ -83,15 +93,21 @@ public class GuestsImpl implements Guests {
 	@Override
 	public int totalCount(String filter) throws IOException {
 		PersonMetadata personDm = PersonImpl.dm();
-		String statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s IN (SELECT %s FROM %s WHERE concat(%s,' ', %s) ILIKE ?  OR concat(%s, ' ', %s) ILIKE ?)", dm.keyName(), dm.domainName(), dm.keyName(), personDm.keyName(), personDm.domainName(), personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey());
+		String statement = String.format("SELECT COUNT(md.%s) FROM %s md "
+				+ "JOIN %s pers ON pers.%s=md.%s "
+				+ "WHERE (concat(pers.%s,' ', pers.%s) ILIKE ?  OR concat(pers.%s, ' ', pers.%s) ILIKE ?) AND pers.%s=? ",
+				dm.keyName(), dm.domainName(), 
+				personDm.domainName(), personDm.keyName(), dm.keyName(),
+				personDm.firstNameKey(), personDm.lastNameKey(), personDm.lastNameKey(), personDm.firstNameKey(), personDm.companyIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(company.id());
 		
 		List<Object> results = ds.find(statement, params);
-		return Integer.parseInt(results.get(0).toString());			
+		return Integer.parseInt(results.get(0).toString());		
 	}
 
 	@Override
@@ -101,12 +117,13 @@ public class GuestsImpl implements Guests {
 
 	@Override
 	public boolean contains(Guest item) {
-		return ds.exists(item.id());
+		return item.isPresent() && persons.contains(item);
 	}
 
 	@Override
 	public Guest transform(Person item) throws IOException {
-		if(!item.isPresent())
+		
+		if(!persons.contains(item))
 			throw new IllegalArgumentException("La personne n'a pas été trouvée !");
 		
 		ds.set(item.id(), new HashMap<String, Object>());
@@ -118,8 +135,8 @@ public class GuestsImpl implements Guests {
 	public Guest get(UUID id) throws IOException {
 		Guest item = build(id);
 		
-		if(!item.isPresent())
-			throw new IllegalArgumentException("Le hôte n'a pas été trouvé !");
+		if(!contains(item))
+			throw new IllegalArgumentException("L'hôte n'a pas été trouvé !");
 		
 		return item;
 	}

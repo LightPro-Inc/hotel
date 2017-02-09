@@ -12,6 +12,7 @@ import com.infrastructure.core.Queryable;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainStore;
+import com.securities.api.Company;
 import com.securities.api.Person;
 import com.securities.api.Sex;
 import com.securities.impl.PersonImpl;
@@ -117,4 +118,8 @@ public class GuestImpl implements Guest {
 		return !isEqual(item);
 	}
 
+	@Override
+	public Company company() throws IOException {
+		return this.identity.company();
+	}
 }

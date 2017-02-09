@@ -27,10 +27,13 @@ import com.lightpro.hotel.cmd.MaidEdited;
 import com.lightpro.hotel.cmd.PeriodCmd;
 import com.lightpro.hotel.vm.MaidDayJobVm;
 import com.lightpro.hotel.vm.MaidVm;
+import com.securities.api.Secured;
 
 @Path("/maid")
 public class MaidRs extends HotelBaseRs {
+	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAll() throws IOException {	
 		
@@ -50,6 +53,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/active")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllActives() throws IOException {	
@@ -70,6 +74,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @QueryParam("page") int page, 
@@ -97,6 +102,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingle(@PathParam("id") UUID id) throws IOException {	
@@ -114,6 +120,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response add(final MaidEdited cmd) throws IOException {
 		
@@ -131,6 +138,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/activate")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response activate(@PathParam("id") final UUID id, final ActivateMaidCmd cmd) throws IOException {
@@ -149,6 +157,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/dayjob")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getDayJobs(final PeriodCmd period) throws IOException {
@@ -170,6 +179,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/dayjob/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingleMaidDayJob(@PathParam("id") final UUID id) throws IOException {
@@ -187,6 +197,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/dayjob/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response deleteMaidDayJob(@PathParam("id") final UUID id) throws IOException {
@@ -205,6 +216,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/plan")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response plan(@PathParam("id") final UUID id, final LocalDateTime date) throws IOException {
@@ -223,6 +235,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/mark-present")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response markMaidPresent(@PathParam("id") final UUID id, LocalDateTime date) throws IOException {
@@ -243,6 +256,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/mark-absent")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response markMaidAbsent(@PathParam("id") final UUID id, LocalDateTime date) throws IOException {
@@ -263,6 +277,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("id") final UUID id, final MaidEdited cmd) throws IOException {
@@ -281,6 +296,7 @@ public class MaidRs extends HotelBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response delete(@PathParam("id") final UUID id) throws IOException {
