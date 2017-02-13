@@ -144,4 +144,14 @@ public class HotelImpl implements Hotel {
 	public boolean isPresent() {
 		return origin.isPresent();
 	}
+
+	@Override
+	public void activate(boolean active) throws IOException {
+		origin.activate(active);
+	}
+
+	@Override
+	public boolean isActive() {
+		return origin.isActive();
+	}
 }
