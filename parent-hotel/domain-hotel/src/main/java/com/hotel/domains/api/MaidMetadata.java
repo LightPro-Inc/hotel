@@ -31,6 +31,10 @@ public class MaidMetadata implements DomainMetadata {
 		return "active";
 	}
 	
+	public String moduleIdKey() {
+		return "moduleid";
+	}
+	
 	public static MaidMetadata create(){
 		return new MaidMetadata();
 	}

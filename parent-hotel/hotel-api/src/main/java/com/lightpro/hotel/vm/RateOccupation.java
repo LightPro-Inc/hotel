@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
-public class RateOccupation {
+public final class RateOccupation {
 	
 	private final transient double rate;
 	private final transient boolean isWeekPeriod;
@@ -70,7 +70,7 @@ public class RateOccupation {
 	}
 	
 	@JsonGetter
-	public String getRateInPercentFormatted(){
+	public String getRateInPercentFormatted(){		
 		return String.format("%.1f", rate * 100);
 	}
 }

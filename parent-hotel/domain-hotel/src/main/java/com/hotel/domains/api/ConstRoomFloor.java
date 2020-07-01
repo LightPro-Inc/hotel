@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ConstRoomFloor implements RoomFloor {
+public final class ConstRoomFloor implements RoomFloor {
 
 	private final transient String id;
 	private final transient String name;	

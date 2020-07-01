@@ -10,11 +10,11 @@ import com.hotel.domains.api.BookingStatus;
 
 public class BookingEdit {
 	
+	private final UUID customerId;
 	private final UUID guestId;
 	private final LocalDateTime start;
 	private final LocalDateTime end;
 	private final BookingStatus statusId;
-	private final double nightPriceApplied;
 	private final String naturePiece;
 	private final String numeroPiece;
 	private final LocalDate deliveredDatePiece;
@@ -23,18 +23,17 @@ public class BookingEdit {
 	private final int numberOfChildren;
 	private final int numberOfAdults;
 	private final String exactDestination;
-	private final GuestEdit guest;
 	
 	public BookingEdit(){
 		throw new UnsupportedOperationException("#BookEdit()");
 	}
 	
 	@JsonCreator
-	public BookingEdit(@JsonProperty("guestId") final UUID guestId, 
+	public BookingEdit(@JsonProperty("customerId") final UUID customerId,
+					@JsonProperty("guestId") final UUID guestId, 
 					@JsonProperty("start") final LocalDateTime start,
 					@JsonProperty("end") final LocalDateTime end,
 					@JsonProperty("statusId") final BookingStatus statusId,
-					@JsonProperty("nightPriceApplied") final double nightPriceApplied,
 					@JsonProperty("naturePiece") final String naturePiece, 
 					@JsonProperty("numeroPiece") final String numeroPiece,
 					@JsonProperty("deliveredDatePiece") final LocalDate deliveredDatePiece, 
@@ -42,14 +41,13 @@ public class BookingEdit {
 					@JsonProperty("editedByPiece") final String editedByPiece,
 					@JsonProperty("numberOfChildren") final int numberOfChildren,
 					@JsonProperty("numberOfAdults") final int numberOfAdults,
-					@JsonProperty("exactDestination") final String exactDestination,
-					@JsonProperty("guest") final GuestEdit guest){
+					@JsonProperty("exactDestination") final String exactDestination){
 		
+		this.customerId = customerId;
 		this.guestId = guestId;
 		this.start = start;
 		this.end = end;
 		this.statusId = statusId;
-		this.nightPriceApplied = nightPriceApplied;
 		this.naturePiece = naturePiece;
 		this.numeroPiece = numeroPiece;
 		this.deliveredDatePiece = deliveredDatePiece;
@@ -58,7 +56,10 @@ public class BookingEdit {
 		this.numberOfChildren = numberOfChildren;
 		this.numberOfAdults = numberOfAdults;
 		this.exactDestination = exactDestination;
-		this.guest = guest == null ? GuestEdit.defaultValue() : guest;
+	}
+	
+	public UUID customerId(){
+		return this.customerId;
 	}
 	
 	public UUID guestId(){
@@ -75,10 +76,6 @@ public class BookingEdit {
 	
 	public BookingStatus statusId(){
 		return this.statusId;
-	}
-	
-	public double nightPriceApplied(){
-		return this.nightPriceApplied;
 	}
 	
 	public String naturePiece(){
@@ -111,9 +108,5 @@ public class BookingEdit {
 	
 	public String exactDestination(){
 		return this.exactDestination;
-	}
-	
-	public GuestEdit guest(){
-		return this.guest;
 	}
 }

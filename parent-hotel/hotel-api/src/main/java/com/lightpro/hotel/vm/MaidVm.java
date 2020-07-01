@@ -1,81 +1,47 @@
 package com.lightpro.hotel.vm;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.hotel.domains.api.Maid;
 
-public class MaidVm {
+public final class MaidVm {
 	
-	private final transient Maid origin;
+	public final UUID id;
+	public final String name;
+	public final String locationAddress;
+	public final String phone;
+	public final String mobile;
+	public final String fax;
+	public final String mail;
+	public final String poBox;
+	public final String webSite;
+	public final String photo;
+	public final int natureId;
+	public final String nature;	
+	public boolean active;
 	
-	public MaidVm(){
-		throw new UnsupportedOperationException("#MaidVm()");
-	}
-	
-	public MaidVm(final Maid origin) {
-        this.origin = origin;
+	public MaidVm() {
+        throw new UnsupportedOperationException("#MaidVm()");
     }
 	
-	@JsonGetter
-	public UUID getId(){
-		return origin.id();
-	}
-	
-	@JsonGetter
-	public String getFirstName() throws IOException {
-		return origin.firstName();
-	}
-	
-	@JsonGetter
-	public String getLastName() throws IOException {
-		return origin.lastName();
-	}
-	
-	@JsonGetter
-	public String getFullName() throws IOException {
-		return origin.fullName();
-	}
-	
-	@JsonGetter
-	public String getSex() throws IOException{
-		return origin.sex().name();
-	}
-	
-	@JsonGetter
-	public String getAddress() throws IOException {
-		return origin.address();
-	}
-	
-	@JsonGetter
-	public LocalDate getBirthDate() throws IOException {
-		return origin.birthDate();
-	}
-	
-	@JsonGetter
-	public String getTel1() throws IOException {
-		return origin.tel1();
-	}
-	
-	@JsonGetter
-	public String getTel2() throws IOException{
-		return origin.tel2();
-	}
-	
-	@JsonGetter
-	public String getEmail() throws IOException {
-		return origin.email();
-	}
-	
-	@JsonGetter
-	public String getPhoto() throws IOException {
-		return origin.photo();
-	}
-	
-	@JsonGetter
-	public boolean getActive() throws IOException {
-		return origin.active();
-	}
+	public MaidVm(final Maid contact) {
+		try {
+			this.id = contact.id();
+	        this.name = contact.name();
+	        this.locationAddress = contact.locationAddress();
+	        this.phone = contact.phone();
+	        this.mobile = contact.mobile();
+	        this.fax = contact.fax();
+	        this.mail = contact.mail();
+	        this.poBox = contact.poBox();
+	        this.webSite = contact.webSite();
+	        this.photo = contact.photo();
+	        this.natureId = contact.nature().id();
+	        this.nature = contact.nature().toString();
+	        this.active = contact.active();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}	        
+    }
 }

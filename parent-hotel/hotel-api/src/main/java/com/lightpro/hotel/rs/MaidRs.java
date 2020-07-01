@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -20,13 +19,14 @@ import javax.ws.rs.core.Response;
 
 import com.hotel.domains.api.Maid;
 import com.hotel.domains.api.MaidDayJob;
+import com.hotel.domains.api.MaidStatus;
 import com.hotel.domains.api.Maids;
 import com.infrastructure.core.PaginationSet;
 import com.lightpro.hotel.cmd.ActivateMaidCmd;
-import com.lightpro.hotel.cmd.MaidEdited;
 import com.lightpro.hotel.cmd.PeriodCmd;
 import com.lightpro.hotel.vm.MaidDayJobVm;
 import com.lightpro.hotel.vm.MaidVm;
+import com.securities.api.Contact;
 import com.securities.api.Secured;
 
 @Path("/maid")
@@ -63,7 +63,7 @@ public class MaidRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<MaidVm> items = hotel().maids().actives()
+						List<MaidVm> items = hotel().maids().withStatus(MaidStatus.ACTIVE).all()
 													 .stream()
 											 		 .map(m -> new MaidVm(m))
 											 		 .collect(Collectors.toList());
@@ -92,7 +92,7 @@ public class MaidRs extends HotelBaseRs {
 															 .map(m -> new MaidVm(m))
 															 .collect(Collectors.toList());
 													
-						int count = container.totalCount(filter);
+						long count = container.count(filter);
 						PaginationSet<MaidVm> pagedSet = new PaginationSet<MaidVm>(itemsVm, page, count);
 						
 						return Response.ok(pagedSet).build();
@@ -121,17 +121,19 @@ public class MaidRs extends HotelBaseRs {
 	
 	@POST
 	@Secured
+	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
-	public Response add(final MaidEdited cmd) throws IOException {
+	public Response add(@PathParam("id") final UUID id) throws IOException {
 		
 		return createHttpResponse(
 				new Callable<Response>(){
 					@Override
 					public Response call() throws IOException {
 						
-						Maids containers = hotel().maids();
-						Maid item = containers.add(cmd.firstName(), cmd.lastName(), cmd.sex(), cmd.address(), cmd.birthDate(), cmd.tel1(), cmd.tel2(), cmd.email(), cmd.photo());
+						Contact contact = hotel().contacts().build(id);
+						Maid item = hotel().maids().add(contact);
 						
+						log.info(String.format("Création de l'employé d'entretien %s", item.name()));
 						return Response.ok(new MaidVm(item)).build();
 					}
 				});		
@@ -151,6 +153,11 @@ public class MaidRs extends HotelBaseRs {
 						Maid item = hotel().maids().get(id);
 						item.activate(cmd.active());
 						
+						if(cmd.active())
+							log.info(String.format("Activation de l'employé d'entretien %s", item.name()));
+						else
+							log.info(String.format("Désactivation de l'employé d'entretien %s", item.name()));
+						
 						return Response.status(Response.Status.OK).build();
 					}
 				});		
@@ -168,7 +175,7 @@ public class MaidRs extends HotelBaseRs {
 					public Response call() throws IOException {
 						
 						List<MaidDayJobVm> itemsVm = hotel().maidDayJobs()
-															 .between(period.start(), period.end())
+															 .between(period.start(), period.end()).all()
 															 .stream()
 															 .map(m -> new MaidDayJobVm(m))
 															 .collect(Collectors.toList());
@@ -210,6 +217,7 @@ public class MaidRs extends HotelBaseRs {
 						MaidDayJob item = hotel().maidDayJobs().get(id);
 						hotel().maidDayJobs().delete(item);
 						
+						log.info(String.format("Suppression du jour plannifié de l'employé d'entretien %s", item.maid().name()));
 						return Response.status(Response.Status.OK).build();
 					}
 				});		
@@ -227,8 +235,9 @@ public class MaidRs extends HotelBaseRs {
 					public Response call() throws IOException {
 						
 						Maid maid = hotel().maids().get(id);
-						MaidDayJob item = hotel().maidDayJobs().plan(date.toLocalDate(), maid);
+						MaidDayJob item = maid.daysJob().add(date.toLocalDate());
 						
+						log.info(String.format("Plannification du jour de l'employé d'entretien %s", maid.name()));
 						return Response.ok(new MaidDayJobVm(item)).build();
 					}
 				});		
@@ -246,10 +255,11 @@ public class MaidRs extends HotelBaseRs {
 					public Response call() throws IOException {
 						
 						Maid maid = hotel().maids().get(id);
-						MaidDayJob item = hotel().maidDayJobs().get(date.toLocalDate(), maid);
+						MaidDayJob item = maid.daysJob().get(date.toLocalDate());
 												
 						item.markPresent();
 							
+						log.info(String.format("Pointage de la présence de l'employé d'entretien %s", maid.name()));
 						return Response.ok(new MaidDayJobVm(item)).build();
 					}
 				});		
@@ -267,30 +277,12 @@ public class MaidRs extends HotelBaseRs {
 					public Response call() throws IOException {
 						
 						Maid maid = hotel().maids().get(id);
-						MaidDayJob item = hotel().maidDayJobs().get(date.toLocalDate(), maid);
+						MaidDayJob item = maid.daysJob().get(date.toLocalDate());
 												
 						item.markAbsent();
 							
+						log.info(String.format("Pointage de l'absence de l'employé d'entretien %s", maid.name()));
 						return Response.ok(new MaidDayJobVm(item)).build();
-					}
-				});		
-	}
-	
-	@PUT
-	@Secured
-	@Path("/{id}")
-	@Produces({MediaType.APPLICATION_JSON})
-	public Response update(@PathParam("id") final UUID id, final MaidEdited cmd) throws IOException {
-		
-		return createHttpResponse(
-				new Callable<Response>(){
-					@Override
-					public Response call() throws IOException {
-						
-						Maid item = hotel().maids().get(id);
-						item.update(cmd.firstName(), cmd.lastName(), cmd.sex(), cmd.address(), cmd.birthDate(), cmd.tel1(), cmd.tel2(), cmd.email(), cmd.photo());
-						
-						return Response.ok(new MaidVm(item)).build();
 					}
 				});		
 	}
@@ -307,8 +299,10 @@ public class MaidRs extends HotelBaseRs {
 					public Response call() throws IOException {
 						
 						Maid item = hotel().maids().get(id);
+						String name = item.name();
 						hotel().maids().delete(item);
 						
+						log.info(String.format("Suppression de l'employé d'entretien %s", name));
 						return Response.status(Response.Status.OK).build();
 					}
 				});	

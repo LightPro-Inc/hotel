@@ -2,7 +2,7 @@ package com.lightpro.hotel.vm;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
-public class LocationStat {
+public final class LocationStat {
 	
 	private final transient String roomCategory;
 	private final transient double amount;

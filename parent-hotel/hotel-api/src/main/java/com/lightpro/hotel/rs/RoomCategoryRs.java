@@ -72,7 +72,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 								   .map(m -> new RoomCategoryVm(m))
 								   .collect(Collectors.toList());
 
-						int count = hotel().roomCategories().totalCount(filter);
+						long count = hotel().roomCategories().count(filter);
 						PaginationSet<RoomCategoryVm> pagedSet = new PaginationSet<RoomCategoryVm>(roomCategories, page, count);
 						return Response.ok(pagedSet).build();
 					}
@@ -112,6 +112,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 						RoomCategory roomCategory = hotel().roomCategories()
 								 .add(data.name(), data.capacity(), data.nightPrice());
 
+						log.info(String.format("Création de la catégorie de chambre %s", roomCategory.name()));
 						return Response.status(Status.CREATED)
 								       .entity(new RoomCategoryVm(roomCategory))
 								       .build();
@@ -133,6 +134,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 						RoomCategory roomCategory = hotel().roomCategories().get(id);
 						roomCategory.update(data.name(), data.capacity(), data.nightPrice());
 
+						log.info(String.format("Mise à jour des données de la catégorie de chambre %s", roomCategory.name()));
 						return Response.noContent().build();
 					}
 				});	
@@ -151,8 +153,10 @@ public class RoomCategoryRs extends HotelBaseRs {
 					public Response call() throws IOException {
 						
 						RoomCategory item = hotel().roomCategories().get(id);
+						String name = item.name();
 						hotel().roomCategories().delete(item);
 						
+						log.info(String.format("Suppression de la catégorie de chambre %s", name));
 						return Response.noContent().build();
 					}
 				});
@@ -172,6 +176,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 						
 						Room room = hotel().roomCategories().get(id).rooms().add(data.number(), data.floorId());		
 
+						log.info(String.format("Création de la chambre %s", room.number()));
 						return Response.status(Status.CREATED)
 								       .entity(new RoomVm(room))
 								       .build();
@@ -225,7 +230,7 @@ public class RoomCategoryRs extends HotelBaseRs {
 												    .map(m -> new RoomVm(m))
 												    .collect(Collectors.toList());
 							
-						int count = rooms.totalCount(filter);
+						long count = rooms.count(filter);
 						PaginationSet<RoomVm> pagedSet = new PaginationSet<RoomVm>(roomsVm, page, count);
 						
 						return Response.ok(pagedSet).build();

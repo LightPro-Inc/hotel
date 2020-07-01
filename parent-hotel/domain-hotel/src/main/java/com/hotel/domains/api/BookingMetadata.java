@@ -35,18 +35,6 @@ public class BookingMetadata implements DomainMetadata {
 		return "enddate";
 	}
 	
-	public String nightPriceAppliedKey() {
-		return "night_price_applied";
-	}
-	
-	public String vatRateAppliedKey() {
-		return "vat_rate_applied";
-	}
-	
-	public String paidAmountKey() {
-		return "paid_amount";
-	}
-	
 	public String statusKey() {
 		return "status";
 	}	
@@ -57,14 +45,6 @@ public class BookingMetadata implements DomainMetadata {
 	
 	public String roomIdKey() {
 		return "roomid";
-	}
-	
-	public String ttcTotalBookingAmountKey() {
-		return "ttc_total_booking_amount";
-	}
-	
-	public String vatBookingAmountKey() {
-		return "vat_booking_amount";
 	}
 	
 	public String naturePieceKey() {
@@ -97,6 +77,18 @@ public class BookingMetadata implements DomainMetadata {
 	
 	public String exactDestinationKey() {
 		return "exact_destination";
+	}
+	
+	public String customerIdKey() {
+		return "customerid";
+	}
+	
+	public String orderIdKey() {
+		return "orderid";
+	}
+	
+	public String sellerIdKey() {
+		return "sellerid";
 	}
 	
 	public static BookingMetadata create(){

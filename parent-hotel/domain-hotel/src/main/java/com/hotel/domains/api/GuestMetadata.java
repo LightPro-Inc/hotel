@@ -27,6 +27,10 @@ public class GuestMetadata implements DomainMetadata {
 		return this.keyName;
 	}
 	
+	public String moduleIdKey() {
+		return "moduleid";
+	}
+	
 	public static GuestMetadata create(){
 		return new GuestMetadata();
 	}

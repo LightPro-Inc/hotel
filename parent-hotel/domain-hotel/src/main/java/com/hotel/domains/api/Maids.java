@@ -1,15 +1,12 @@
 package com.hotel.domains.api;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 
-import com.infrastructure.core.AdvancedQueryable;
-import com.infrastructure.core.Updatable;
-import com.securities.api.Sex;
+import com.infrastructure.core.GuidKeyAdvancedQueryable;
+import com.securities.api.Contact;
 
-public interface Maids extends AdvancedQueryable<Maid, UUID>, Updatable<Maid> {
-	List<Maid> actives() throws IOException;
-	Maid add(String firstName, String lastName, Sex sex, String address, LocalDate birthDate, String tel1, String tel2, String email, String photo) throws IOException;
+public interface Maids extends GuidKeyAdvancedQueryable<Maid> {
+	Maid add(Contact contact) throws IOException;
+	Maids withStatus(MaidStatus status) throws IOException;
+	boolean contains(Contact contact) throws IOException;
 }

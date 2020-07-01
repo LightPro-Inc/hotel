@@ -2,23 +2,15 @@ package com.lightpro.hotel.vm;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-
-public class ResumeLocationStat {
+public final class ResumeLocationStat {
 	
-	private final transient List<LocationStat> stats;
+	public final double totalAmount;
 	
 	public ResumeLocationStat(List<LocationStat> stats){
-		this.stats = stats;
+		this.totalAmount = getTotalAmount(stats);
 	}
-	
-	@JsonGetter
-	List<LocationStat> getStats(){
-		return this.stats;
-	}
-	
-	@JsonGetter
-	public double getTotalAmount(){
+
+	private static double getTotalAmount(List<LocationStat> stats){
 		double sum = 0;
 		
 		for (LocationStat locationStat : stats) {

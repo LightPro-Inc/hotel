@@ -27,6 +27,7 @@ import com.lightpro.hotel.cmd.RoomEdit;
 import com.lightpro.hotel.vm.BookingVm;
 import com.lightpro.hotel.vm.RoomFloorVm;
 import com.lightpro.hotel.vm.RoomVm;
+import com.securities.api.Contact;
 import com.securities.api.Secured;
 
 @Path("/room")
@@ -43,7 +44,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<RoomFloorVm> roomFloorsVm = hotel().allRoomFloors()
+						List<RoomFloorVm> roomFloorsVm = hotel().roomFloors()
 								   .stream()
 								   .map(m -> new RoomFloorVm(m))
 								   .collect(Collectors.toList());
@@ -63,7 +64,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<RoomVm> roomsVm = hotel().allRooms()
+						List<RoomVm> roomsVm = hotel().rooms()
 								.all()
 							    .stream()
 							    .map(m -> new RoomVm(m))
@@ -85,8 +86,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<RoomVm> roomsVm = hotel().allRooms()
-								.availables()
+						List<RoomVm> roomsVm = hotel().rooms().all()
 							    .stream()
 							    .map(m -> new RoomVm(m))
 							    .collect(Collectors.toList());
@@ -107,16 +107,15 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<RoomVm> roomsVm = hotel().allRooms()
+						List<RoomVm> roomsVm = hotel().rooms()
 								.all()								
 							    .stream()
 							    .filter(m -> {
 									try {
 										return m.isFree();
 									} catch (IOException e) {
-										e.printStackTrace();
+										throw new RuntimeException(e);
 									}
-									return false;
 								})
 							    .map(m -> new RoomVm(m))
 							    .collect(Collectors.toList());
@@ -137,15 +136,14 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<RoomVm> roomsVm = hotel().allRooms().all()
+						List<RoomVm> roomsVm = hotel().rooms().all()
 							    .stream()
 							    .filter(m -> {
 									try {
 										return m.isOccupied();
 									} catch (IOException e) {
-										e.printStackTrace();
+										throw new RuntimeException(e);
 									}
-									return false;
 								})
 							    .map(m -> new RoomVm(m))
 							    .collect(Collectors.toList());
@@ -166,16 +164,8 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<RoomVm> roomsVm = hotel().allRooms().all()
+						List<RoomVm> roomsVm = hotel().rooms().withStatus(RoomStatus.DIRTY).all()
 							    .stream()
-							    .filter(m -> {
-									try {
-										return m.status() == RoomStatus.DIRTY;
-									} catch (IOException e) {
-										e.printStackTrace();
-									}
-									return false;
-								})
 							    .map(m -> new RoomVm(m))
 							    .collect(Collectors.toList());
 	
@@ -197,15 +187,13 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						String filterLocal = (filter == null) ? "" : filter;
-						
-						List<RoomVm> rooms =  hotel().allRooms()
-												   .find(page, pageSize, filterLocal)
+						List<RoomVm> rooms =  hotel().rooms()
+												   .find(page, pageSize, filter)
 												   .stream()
 												   .map(m -> new RoomVm(m))
 												   .collect(Collectors.toList());
 						
-						int count = hotel().allRooms().totalCount(filter);
+						long count = hotel().rooms().count(filter);
 						PaginationSet<RoomVm> pagedSet = new PaginationSet<RoomVm>(rooms, page, count);
 						return Response.ok(pagedSet).build();
 					}
@@ -223,9 +211,7 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room entity = hotel().allRooms().get(number);
-						if(entity == null)
-							return Response.status(Status.NOT_FOUND).build();
+						Room entity = hotel().rooms().get(number);
 						
 						RoomVm vm = new RoomVm(entity);
 						
@@ -245,9 +231,10 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().get(id);
+						Room room = hotel().rooms().get(id);
 						room.update(data.number(), data.floorId());
 
+						log.info(String.format("Mise à jour des données de la chambre %s", room.number()));
 						return Response.status(Status.NO_CONTENT).build();
 					}
 				});			
@@ -264,9 +251,10 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room item = hotel().allRooms().get(number);
-						hotel().allRooms().delete(item);
+						Room item = hotel().rooms().get(number);
+						hotel().rooms().delete(item);
 						
+						log.info(String.format("Suppresion de la chambre %s", item.number()));
 						return Response.noContent().build();
 					}
 				});			
@@ -283,8 +271,13 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Booking booking = hotel().bookings().book(data.guestId(), id, data.start(), data.end(), data.nightPriceApplied());	
+						Contact guest = hotel().contacts().build(data.guestId());
+						Contact customer = hotel().contacts().build(data.customerId());
+						Contact seller = currentUser;
+						Room room = hotel().rooms().get(id);
+						Booking booking = room.book(customer, guest, data.start(), data.end(), seller);	
 
+						log.info(String.format("Réservation de la chambre %s", booking.room().number()));
 						return Response.status(Status.CREATED)
 								       .entity(new BookingVm(booking))
 								       .build();
@@ -303,9 +296,10 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().get(id);
+						Room room = hotel().rooms().get(id);
 						room.changeStatus(RoomStatus.CLEANUP);	
 
+						log.info(String.format("Déclarer propre la chambre %s", room.number()));
 						return Response.ok(new RoomVm(room)).build();
 					}
 				});			
@@ -322,9 +316,11 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().get(id);
+						Room room = hotel().rooms().get(id);
 						room.changeStatus(RoomStatus.DIRTY);	
 
+						log.info(String.format("Déclarer sale la chambre %s", room.number()));
+						
 						return Response.ok(new RoomVm(room)).build();
 					}
 				});			
@@ -341,9 +337,10 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().get(id);
+						Room room = hotel().rooms().get(id);
 						room.changeStatus(RoomStatus.OUTOFSERVICE);	
 
+						log.info(String.format("Déclarer hors service la chambre %s", room.number()));
 						return Response.ok(new RoomVm(room)).build();
 					}
 				});			
@@ -360,9 +357,11 @@ public class RoomRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Room room = hotel().allRooms().get(id);
+						Room room = hotel().rooms().get(id);
 						room.changeStatus(RoomStatus.READY);	
 
+						log.info(String.format("Déclarer en service la chambre %s", room.number()));
+						
 						return Response.ok(new RoomVm(room)).build();
 					}
 				});			

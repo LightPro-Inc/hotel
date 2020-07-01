@@ -21,11 +21,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.hotel.domains.api.Booking;
-import com.hotel.domains.api.Bookings;
 import com.hotel.domains.api.DayOccupation;
 import com.hotel.domains.api.DayOccupationStatus;
 import com.hotel.domains.api.Guest;
-import com.hotel.domains.api.Guests;
 import com.hotel.domains.api.RoomCategories;
 import com.hotel.domains.api.RoomCategory;
 import com.lightpro.hotel.cmd.BookingEdit;
@@ -39,7 +37,7 @@ import com.lightpro.hotel.vm.GuestVm;
 import com.lightpro.hotel.vm.LocationStat;
 import com.lightpro.hotel.vm.RateOccupation;
 import com.lightpro.hotel.vm.ResumeLocationStat;
-import com.securities.api.Person;
+import com.securities.api.Contact;
 import com.securities.api.Secured;
 import com.infrastructure.core.PaginationSet;
 
@@ -87,9 +85,9 @@ public class BookingRs extends HotelBaseRs {
 						for (RoomCategory rc : roomCategories.all()) {
 							
 							double amount = 0;							
-							for (Booking bk : rc.bookings().all()) {
+							/*for (Booking bk : rc.bookings().all()) {
 								amount += bk.ttcTotalBookingAmount();
-							}
+							}*/
 							
 							LocationStat stat = new LocationStat(rc.name(), amount);
 							stats.add(stat);
@@ -120,7 +118,7 @@ public class BookingRs extends HotelBaseRs {
 												   .map(m -> new BookingVm(m))
 												   .collect(Collectors.toList());
 						
-						int count = hotel().bookings().totalCount(filter);
+						long count = hotel().bookings().count(filter);
 						PaginationSet<BookingVm> pagedSet = new PaginationSet<BookingVm>(rooms, page, count);
 						return Response.ok(pagedSet).build();
 					}
@@ -139,11 +137,9 @@ public class BookingRs extends HotelBaseRs {
 					public Response call() throws IOException {
 						
 						Booking booking = hotel().bookings().get(id);
+						Guest guest = hotel().guests().get(booking.guest().id());
 						
-						if(booking.guest().id() == null)
-							return Response.status(Status.NOT_FOUND).build();
-							
-						return Response.ok(new GuestVm(booking.guest())).build();
+						return Response.ok(new GuestVm(guest)).build();
 					}
 				});	
 	}
@@ -270,7 +266,7 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<BookingVm> bookingsVm = hotel().bookings().between(period.start(), period.end())
+						List<BookingVm> bookingsVm = hotel().bookings().between(period.start(), period.end()).all()
 							   	  .stream()
 							      .map(m -> new BookingVm(m))
 							      .collect(Collectors.toList());
@@ -291,28 +287,14 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Bookings bookings = hotel().bookings();
-						Guest guest = bookings.guests().build(data.id());
-						
-						// 1 - enregistrer l'hote
-						if(!guest.isPresent()) {
-							// nouvel hote
-							Person person = hotel().company().persons().build(data.id());
-							if(person.isPresent()){
-								guest = bookings.guests().transform(person);
-							}else{
-								guest = bookings.guests().add(data.firstName(), data.lastName(), data.sex(), data.address(), data.birthDate(), data.tel1(), data.tel2(), data.email(), data.photo());
-							}							
-						}else {
-							// mettre les données de l'hote ce jour
-							guest.update(data.firstName(), data.lastName(), data.sex(), data.address(), data.birthDate(), data.tel1(), data.tel2(), data.email(), data.photo());							
-						}
-						
-						// 2 - attribuer la reservation a l'hote
-						Booking booking = bookings.get(id);		
-						booking.identifyGuest(guest.id());
+						Contact contact = hotel().contacts().build(data.id());
+											
+			     		// 1 - attribuer la reservation a l'hote
+						Booking booking = hotel().bookings().get(id);		
+						booking.identifyGuest(contact);
 													
-						return Response.ok(new GuestVm(guest)).build();
+						log.info(String.format("Idendification de l'hôte de la réservation de la chambre %s", booking.room().number()));
+						return Response.ok().build();
 					}
 				});				
 	}
@@ -331,6 +313,7 @@ public class BookingRs extends HotelBaseRs {
 						Booking booking = hotel().bookings().get(id);
 						booking.move(bm.newStart(), bm.newEnd(), bm.newRoomId());
 							
+						log.info(String.format("Déplacement de la période réservation de la chambre %s", booking.room().number()));
 						return Response.noContent().build();
 					}
 				});	
@@ -350,6 +333,7 @@ public class BookingRs extends HotelBaseRs {
 						Booking booking = hotel().bookings().get(id);
 						booking.resize(br.newStart(), br.newEnd());
 							
+						log.info(String.format("Modification de la période de réservation de la chambre %s", booking.room().number()));
 						return Response.noContent().build();
 					}
 				});			
@@ -369,6 +353,7 @@ public class BookingRs extends HotelBaseRs {
 						Booking booking = hotel().bookings().get(id);
 						booking.confirm();
 
+						log.info(String.format("Confirmation de la réservation de la chambre %s", booking.room().number()));
 						return Response.ok(new BookingVm(booking)).build();
 					}
 				});		
@@ -385,8 +370,11 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().bookings().get(id).cancel();
+						Booking booking = hotel().bookings().get(id);
+						String room = booking.room().number();
+						booking.cancel();
 						
+						log.info(String.format("Annulation de la réservation de la chambre %s", room));
 						return Response.noContent().build();
 					}
 				});		
@@ -403,8 +391,10 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().bookings().get(id).checkIn();
+						Booking booking = hotel().bookings().get(id);
+						booking.checkIn();
 						
+						log.info(String.format("Logement de l'hôte de la chambre %s", booking.room().number()));
 						return Response.noContent().build();
 					}
 				});		
@@ -421,8 +411,10 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						hotel().bookings().get(id).checkOut();
+						Booking booking = hotel().bookings().get(id);
+						booking.checkOut();
 						
+						log.info(String.format("Sortie de l'hôte de la chambre %s", booking.room().number()));
 						return Response.noContent().build();
 					}
 				});		
@@ -493,27 +485,17 @@ public class BookingRs extends HotelBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Guests container = hotel().bookings().guests();
-						Guest guest = container.build(data.guestId());
-												
-						if(guest.isPresent())
-							guest.update(data.guest().firstName(), data.guest().lastName(), data.guest().sex(), data.guest().address(), data.guest().birthDate(), data.guest().tel1(), data.guest().tel2(), data.guest().email(), data.guest().photo());
-						else
-						{
-							Person person = hotel().company().persons().build(data.guestId());
-							if(person.isPresent()){
-								guest = container.transform(person);
-							}else{
-								guest = container.add(data.guest().firstName(), data.guest().lastName(), data.guest().sex(), data.guest().address(), data.guest().birthDate(), data.guest().tel1(), data.guest().tel2(), data.guest().email(), data.guest().photo());
-							}					
-						}
+						Contact guest = hotel().contacts().build(data.guestId());
+						Contact customer = hotel().contacts().build(data.customerId());
 						
 						Booking booking = hotel().bookings().get(id);
-						booking.identifyGuest(guest.id());						
+						booking.identifyGuest(guest);
+						booking.identifyCustomer(customer);
 						booking.pieceInfos(data.naturePiece(), data.numeroPiece(), data.deliveredDatePiece(), data.editionPlacePiece(), data.editedByPiece());
 						booking.otherInfos(data.numberOfChildren(), data.numberOfAdults(), data.exactDestination());
 
-						return Response.ok(new GuestVm(guest)).build();
+						log.info(String.format("Mise à jour de la réservation de la chambre %s", booking.room().number()));
+						return Response.ok(new BookingVm(booking)).build();
 					}
 				});	
 		

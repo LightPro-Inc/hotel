@@ -20,7 +20,7 @@ public class DayOccupationsImpl implements DayOccupations {
 	
 	@Override
 	public List<DayOccupation> of(LocalDate date) throws IOException {
-		List<Booking> bks = bookings.at(date);
+		List<Booking> bks = bookings.at(date).all();
 		
 		return bks.stream()
 				  .map(m -> build(m, date))
